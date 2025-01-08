@@ -15,7 +15,7 @@ class TaskController{
 
         const parameterValidation = verifyParams(title, description)
         if(!parameterValidation.valid){
-            return response.status(responsesHTTP.BAD_REQUEST.status).json(parameterValidation.error);
+            return response.status(responsesHTTP.BAD_REQUEST.status).json(parameterValidation.message);
         }
 
         const obj = {id: hashGenerate(title) ,title: title, description: description};
