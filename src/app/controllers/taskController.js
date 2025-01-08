@@ -1,30 +1,26 @@
-const verifyParams = require("../utils/verifyParams");
+const hashGenerate = require("../utils/helpers/hashGenerate");
+const responsesHTTP = require("../utils/helpers/responsesHTTPS");
+const verifyParams = require("../utils/validators/verifyParams");
 
 const bd = [];
 
 class TaskController{
     async index(request, response){
-        response.json({message: 'Bem-vindo à API de tarefas'});
+        if(bd.length === 0) return response.status(responsesHTTP.NO_CONTENT.status).json(responsesHTTP.NO_CONTENT);
+        response.status(responsesHTTP.SUCCESS.status).json(bd);
     }
 
-    async create(request, response){
+    async store(request, response){
         const {title, description} = request.body;
 
-        const verifyAllParams = verifyParams(title, description);
-        console.log(verifyAllParams)
-
-        if(verifyAllParams){
-            const obj = {title: title, description: description};
-            console.log(obj)
-            bd.push(obj);
-            const json = JSON.stringify(obj)
-            console.log(json)
-            return response.json(json)
+        const parameterValidation = verifyParams(title, description)
+        if(!parameterValidation.valid){
+            return response.status(responsesHTTP.BAD_REQUEST.status).json(parameterValidation.error);
         }
 
-        return response.json({Error: 'Titulo ou descrição vazios'})
-
-
+        const obj = {id: hashGenerate(title) ,title: title, description: description};
+        bd.push(obj);
+        return response.status(responsesHTTP.CREATED.status).json(obj);
     }
 }
 module.exports = new TaskController();
