@@ -43,3 +43,5 @@ const server = https.createServer(options, app);
 
 // Calling the function to start the server.
 server.listen(port, () => console.log(textInitialWhenConnect));
+
+module.exports =  app;
