@@ -1,5 +1,8 @@
+const findTaskById = require("../services/findTaskById/findTaskById");
+const updateTask = require("../services/updateTask/updateTask");
 const hashGenerate = require("../utils/helpers/hashGenerate");
 const responsesHTTP = require("../utils/helpers/responsesHTTPS");
+const isValidHash = require("../utils/validators/isValidIdHash");
 const verifyParams = require("../utils/validators/verifyParams");
 
 const bd = [];
@@ -21,6 +24,32 @@ class TaskController{
         const obj = {id: hashGenerate(title) ,title: title, description: description};
         bd.push(obj);
         return response.status(responsesHTTP.CREATED.status).json(obj);
+    }
+
+    async update(request, response){
+        const { id } = request.params;
+        const {title, description} = request.body;
+
+        const isIdvalid = isValidHash(id);
+        if(!isIdvalid){
+            return response.status(responsesHTTP.BAD_REQUEST.status).json(responsesHTTP.BAD_REQUEST)
+        }
+
+        const tasksVerified = verifyParams(title, description);
+        if(!tasksVerified.valid){
+            return response.status(responsesHTTP.BAD_REQUEST.status).json(tasksVerified.message);
+        }
+
+        const taskForUpdate = findTaskById(id, bd);
+
+        if(!taskForUpdate){
+            return response.status(responsesHTTP.NOT_FOUND.status).json(responsesHTTP.NOT_FOUND);
+        }
+
+        const taskUpdated = updateTask(title, description, taskForUpdate, bd);
+
+        return response.status(responsesHTTP.SUCCESS.status).json(taskUpdated);
+
     }
 }
 module.exports = new TaskController();
