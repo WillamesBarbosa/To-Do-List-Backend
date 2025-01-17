@@ -4,6 +4,7 @@ const https = require('https');
 const cors = require('cors');
 
 const routes = require('./routes/routes');
+const responsesHTTP = require('./app/utils/helpers/responsesHTTPS');
 
 const textInitialWhenConnect = `
 -----------------------------------------------
@@ -28,6 +29,11 @@ const corsOptions = {
 // For minimize erros about cors
 app.use(cors(corsOptions));
 app.use(routes);
+
+// Middleware so that errors can respond to the client in case of errors
+app.use((error, request, response, next) => {
+  response.status(responsesHTTP.INTERNAL_SERVER_ERROR.status).json(responsesHTTP.INTERNAL_SERVER_ERROR);
+});
 
 // For read ssl certified
 const options = {
