@@ -8,6 +8,7 @@ describe('TaskController index tests', ()=>{
         const response = await request(server).get('/task')
     
         expect(response.status).toEqual(204)
+
     })
 
 
@@ -19,10 +20,9 @@ describe('TaskController index tests', ()=>{
         const [ {id} ] = response.body;
         expect(response.status).toEqual(200)
         expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao'}]);
-        
+
     })
 })
-
 
 describe('TaskController store tests', ()=>{
     test('Should return status 201, description and title', async()=>{
@@ -33,6 +33,7 @@ describe('TaskController store tests', ()=>{
         expect(response.body).toHaveProperty('title', 'titulo');
         expect(response.body).toHaveProperty('description', 'descricao');
     })
+
 
     test('Should return status 400 and error Title is required', async ()=>{
         const server = app;
@@ -68,3 +69,50 @@ describe('TaskController store tests', ()=>{
 
 
 
+describe('TaskController update tests', ()=>{
+    test('Should return the updated object', async ()=>{
+        const server = app;
+
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'});
+
+        expect(taskUpdated.body).toHaveProperty('id', response._body.id);
+        expect(taskUpdated.body).toHaveProperty('title', 'titulo2');
+        expect(taskUpdated.body).toHaveProperty('description', 'descricao2');
+
+    })
+
+
+    test('Should return error 400 because id invalid', async ()=>{
+        const server = app;
+
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        response._body.id = null;
+        const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'});
+
+        expect(taskUpdated.status).toEqual(400);
+
+    })
+
+    test('Should return error 400 because title or description is invalid', async ()=>{
+        const server = app;
+
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const taskUpdatedWithTitleEmpty = await request(server).put('/task/'+response._body.id).send({title: '', description: 'descricao2'});
+        const taskUpdatedWithDescriptionEmpty = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: ''});
+
+        expect(taskUpdatedWithTitleEmpty.status).toEqual(400);
+        expect(taskUpdatedWithDescriptionEmpty.status).toEqual(400);
+
+    })   
+
+    test('Should return error 404 because id not exist', async ()=>{
+        const server = app;
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        response._body.id = 'cabfbd41a2b6fe99831eed179d8713fa3cc0d91d8722431db7ff3bc4d5287e98'
+        const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: 'descricao2'});
+
+        expect(taskUpdated.status).toEqual(404);
+    })
+    
+})
