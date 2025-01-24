@@ -1,6 +1,13 @@
 const request = require('supertest');
 
 const app = require('../../index');
+const bd = require('../../database/database')
+
+
+beforeEach(() => {
+    bd.length = 0; // Limpa o bd antes de cada teste
+});
+
 
 describe('TaskController index tests', ()=>{
     test('Should return 204 if bd equals 0', async()=>{
@@ -8,7 +15,6 @@ describe('TaskController index tests', ()=>{
         const response = await request(server).get('/task')
     
         expect(response.status).toEqual(204)
-
     })
 
 
@@ -115,4 +121,34 @@ describe('TaskController update tests', ()=>{
         expect(taskUpdated.status).toEqual(404);
     })
     
+})
+
+
+describe('TaskController delete tests', ()=>{
+    test('Should return an array and have deleted the correct task', async ()=>{
+        const server = app;
+
+
+        await request(server).post('/task').send({title: 'titulo1', description: 'descricao'});
+        const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
+
+        await request(server).delete('/task/'+objForDelete._body.id);
+
+        const checkIfTaskWasDeletedCorrectly = await request(server).get('/task');
+
+        expect(checkIfTaskWasDeletedCorrectly.body).toHaveLength(2);
+    })
+    
+    test('should return status 200', async ()=>{
+        const server = app;
+
+        await request(server).post('/task').send({title: 'titulo1', description: 'descricao'});
+        const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
+
+        const objDeleted = await request(server).delete('/task/'+objForDelete._body.id);
+        expect(objDeleted.status).toEqual(200);
+
+    })
 })
