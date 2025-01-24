@@ -1,16 +1,17 @@
+const deleteTask = require("../services/deleteTask/deleteTask");
 const findTaskById = require("../services/findTaskById/findTaskById");
 const updateTask = require("../services/updateTask/updateTask");
 const hashGenerate = require("../utils/helpers/hashGenerate");
 const responsesHTTP = require("../utils/helpers/responsesHTTPS");
 const isValidHash = require("../utils/validators/isValidIdHash");
 const verifyParams = require("../utils/validators/verifyParams");
+const bd = require('../../database/database');
 
-const bd = [];
 
 class TaskController{
     async index(request, response){
         if(bd.length === 0) return response.status(responsesHTTP.NO_CONTENT.status).json(responsesHTTP.NO_CONTENT);
-        response.status(responsesHTTP.SUCCESS.status).json(bd);
+        return response.status(responsesHTTP.SUCCESS.status).json(bd);
     }
 
     async store(request, response){
@@ -49,6 +50,26 @@ class TaskController{
         const taskUpdated = updateTask(title, description, taskForUpdate, bd);
 
         return response.status(responsesHTTP.SUCCESS.status).json(taskUpdated);
+
+    }
+
+    async delete(request, response){
+        const { id } = request.params;
+
+        const isIdvalid = isValidHash(id);
+        if(!isIdvalid){
+            return response.status(responsesHTTP.BAD_REQUEST.status).json(responsesHTTP.BAD_REQUEST)
+        }
+
+        const taskForDelete = findTaskById(id, bd);
+
+        if(!taskForDelete){
+            return response.status(responsesHTTP.NOT_FOUND.status).json(responsesHTTP.NOT_FOUND);
+        }
+
+        deleteTask(taskForDelete.index, bd);
+
+        return response.status(responsesHTTP.SUCCESS.status).json(responsesHTTP.SUCCESS);
 
     }
 }
