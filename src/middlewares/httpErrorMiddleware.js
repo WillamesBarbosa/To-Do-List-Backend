@@ -1,0 +1,12 @@
+const responsesHTTP = require("../app/utils/helpers/responsesHTTPS");
+
+function httpErrorHandler(error, request, response, next){
+    if(error && error.statusCode){
+        console.log(error.message)
+        return response.status(error.statusCode).json(error.message);
+    }
+
+    return response.status(responsesHTTP.INTERNAL_SERVER_ERROR.error).json(responsesHTTP.INTERNAL_SERVER_ERROR);
+}
+
+module.exports = httpErrorHandler;
