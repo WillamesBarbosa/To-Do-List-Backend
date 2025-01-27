@@ -2,10 +2,13 @@ const Router = require('express');
 const router = Router();
 
 const TaskController = require('../app/controllers/TaskController');
+const httpErrorHandler = require('../middlewares/httpErrorMiddleware');
+const resolver = require('../app/utils/adapter/resolverHandlerFn');
 
-router.get('/task', TaskController.index);
-router.post('/task', TaskController.store);
-router.put('/task/:id', TaskController.update);
-router.delete('/task/:id', TaskController.delete);
+router.get('/task', resolver(TaskController.index));
+router.post('/task', resolver(TaskController.store));
+router.put('/task/:id', resolver(TaskController.update));
+router.delete('/task/:id', resolver(TaskController.delete));
+router.use(httpErrorHandler)
 
 module.exports = router;
