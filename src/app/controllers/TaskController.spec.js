@@ -15,26 +15,26 @@ beforeAll(() => {
   });
 
 
-// describe('TaskController index tests', ()=>{
-//     test('Should return 204 if bd equals 0', async()=>{
-//         const server = app;
-//         const response = await request(server).get('/task')
+describe('TaskController index tests', ()=>{
+    test('Should return 204 if bd equals 0', async()=>{
+        const server = app;
+        const response = await request(server).get('/task')
     
-//         expect(response.status).toEqual(204)
-//     })
+        expect(response.status).toEqual(204)
+    })
 
 
-//     test('Should return 201 and a series of tasks', async()=>{
-//         const server = app;
+    test('Should return 201 and a series of tasks', async()=>{
+        const server = app;
 
-//         await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
-//         const response = await request(server).get('/task');
-//         const [ {id} ] = response.body;
-//         expect(response.status).toEqual(200)
-//         expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao'}]);
+        await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const response = await request(server).get('/task');
+        const [ {id} ] = response.body;
+        expect(response.status).toEqual(200)
+        expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao'}]);
 
-//     })
-// })
+    })
+})
 
 describe('TaskController store tests', ()=>{
     test('Should return status 201, description and title', async()=>{
