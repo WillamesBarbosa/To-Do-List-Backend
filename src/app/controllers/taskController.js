@@ -1,12 +1,12 @@
 const deleteTask = require("../services/deleteTask/deleteTask");
 const findTaskById = require("../services/findTaskById/findTaskById");
 const updateTask = require("../services/updateTask/updateTask");
-const hashGenerate = require("../utils/helpers/hashGenerate");
 const responsesHTTP = require("../utils/helpers/responsesHTTPS");
 const isValidHash = require("../utils/validators/isValidIdHash");
 const verifyParams = require("../utils/validators/verifyParams");
 const bd = require('../../database/database');
 const ErrorsHTTP = require("../utils/helpers/ErrorsHTTP");
+const TaskRepository = require("../repositories/TaskRepository");
 
 
 class TaskController{
@@ -24,10 +24,9 @@ class TaskController{
             throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
         }
 
-        const obj = {id: hashGenerate(title) ,title: title, description: description};
-        bd.push(obj);
+        const task = await TaskRepository.create(title, description);
 
-        return response.status(responsesHTTP.CREATED.status).json(obj);
+        return response.status(responsesHTTP.CREATED.status).json(task);
     }
 
     async update(request, response){
