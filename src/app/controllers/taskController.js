@@ -11,9 +11,10 @@ const TaskRepository = require("../repositories/TaskRepository");
 
 class TaskController{
     async index(request, response){
-        if(bd.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT, responsesHTTP.NO_CONTENT.status);
+        const task = await TaskRepository.findAll();
+        if(task.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT, responsesHTTP.NO_CONTENT.status);
 
-        return response.status(responsesHTTP.SUCCESS.status).json(bd);
+        return response.status(responsesHTTP.SUCCESS.status).json(task);
     }
 
     async store(request, response){
