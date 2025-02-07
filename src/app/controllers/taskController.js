@@ -2,7 +2,7 @@ const deleteTask = require("../services/deleteTask/deleteTask");
 const findTaskById = require("../services/findTaskById/findTaskById");
 const updateTask = require("../services/updateTask/updateTask");
 const responsesHTTP = require("../utils/helpers/responsesHTTPS");
-const isValidHash = require("../utils/validators/isValidIdHash");
+const isValidUUID = require("../utils/validators/isValidUUID");
 const verifyParams = require("../utils/validators/verifyParams");
 const bd = require('../../database/database');
 const ErrorsHTTP = require("../utils/helpers/ErrorsHTTP");
@@ -15,6 +15,22 @@ class TaskController{
         if(task.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT, responsesHTTP.NO_CONTENT.status);
 
         return response.status(responsesHTTP.SUCCESS.status).json(task);
+    }
+
+    async show(request, response){
+        const { id } = request.params;
+        const isIdvalid = isValidUUID(id);
+        if(!isIdvalid){
+            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
+        }        
+
+        const task = await TaskRepository.findById(id);
+        if(!task){
+            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
+        }
+
+        return response.status(responsesHTTP.SUCCESS.status).json(task);
+ 
     }
 
     async store(request, response){
@@ -34,7 +50,7 @@ class TaskController{
         const { id } = request.params;
         const {title, description} = request.body;
 
-        const isIdvalid = isValidHash(id);
+        const isIdvalid = isValidUUID(id);
         if(!isIdvalid){
             throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status);
         }
@@ -59,7 +75,7 @@ class TaskController{
     async delete(request, response){
         const { id } = request.params;
 
-        const isIdvalid = isValidHash(id);
+        const isIdvalid = isValidUUID(id);
         if(!isIdvalid){
             throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
         }
