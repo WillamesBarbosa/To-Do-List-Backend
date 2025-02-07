@@ -7,6 +7,13 @@ class TaskRepository{
         return rows;
     }
 
+    async findById(id){
+        const row = await database('tasks').where('id', id);
+
+        console.log(row)
+        return row;
+    }
+
     async create(title, description){
         console.log('chegou aqui')
         const data = {
