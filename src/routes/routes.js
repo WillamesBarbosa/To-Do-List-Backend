@@ -5,7 +5,8 @@ const TaskController = require('../app/controllers/TaskController');
 const httpErrorHandler = require('../middlewares/httpErrorMiddleware');
 const resolver = require('../app/utils/adapter/resolverHandlerFn');
 
-router.get('/task', resolver(TaskController.index));
+router.get('/tasks', resolver(TaskController.index));
+router.get('/task/:id', resolver(TaskController.show));
 router.post('/task', resolver(TaskController.store));
 router.put('/task/:id', resolver(TaskController.update));
 router.delete('/task/:id', resolver(TaskController.delete));
