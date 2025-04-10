@@ -107,53 +107,55 @@ describe('TaskController store tests', ()=>{
     })
 })
 
-// describe('TaskController update tests', ()=>{
-//     test('Should return the updated object', async ()=>{
-//         const server = app;
+describe('TaskController update tests', ()=>{
+    test('Should return the updated object', async ()=>{
+        const server = app;
 
-//         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
-//         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'});
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        console.log('vamos ver o id', response._body.id)
+        
+        const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'});
+        console.log(taskUpdated._body.id)
+        expect(taskUpdated.body).toHaveProperty('id', response._body.id);
+        expect(taskUpdated.body).toHaveProperty('title', 'titulo2');
+        expect(taskUpdated.body).toHaveProperty('description', 'descricao2');
 
-//         expect(taskUpdated.body).toHaveProperty('id', response._body.id);
-//         expect(taskUpdated.body).toHaveProperty('title', 'titulo2');
-//         expect(taskUpdated.body).toHaveProperty('description', 'descricao2');
-
-//     })
+    })
 
 
-//     test('Should return error 400 because id invalid', async ()=>{
-//         const server = app;
+    test('Should return error 400 because id invalid', async ()=>{
+        const server = app;
 
-//         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
-//         response._body.id = null;
-//         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'});
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        response._body.id = null;
+        const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'});
 
-//         expect(taskUpdated.status).toEqual(400);
+        expect(taskUpdated.status).toEqual(400);
 
-//     })
+    })
 
-//     test('Should return error 400 because title or description is invalid', async ()=>{
-//         const server = app;
+    test('Should return error 400 because title or description is invalid', async ()=>{
+        const server = app;
 
-//         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
-//         const taskUpdatedWithTitleEmpty = await request(server).put('/task/'+response._body.id).send({title: '', description: 'descricao2'});
-//         const taskUpdatedWithDescriptionEmpty = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: ''});
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const taskUpdatedWithTitleEmpty = await request(server).put('/task/'+response._body.id).send({title: '', description: 'descricao2'});
+        const taskUpdatedWithDescriptionEmpty = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: ''});
 
-//         expect(taskUpdatedWithTitleEmpty.status).toEqual(400);
-//         expect(taskUpdatedWithDescriptionEmpty.status).toEqual(400);
+        expect(taskUpdatedWithTitleEmpty.status).toEqual(400);
+        expect(taskUpdatedWithDescriptionEmpty.status).toEqual(400);
 
-//     })   
+    })   
 
-//     test('Should return error 404 because id not exist', async ()=>{
-//         const server = app;
-//         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
-//         response._body.id = 'cabfbd41a2b6fe99831eed179d8713fa3cc0d91d8722431db7ff3bc4d5287e98'
-//         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: 'descricao2'});
+    test('Should return error 404 because id not exist', async ()=>{
+        const server = app;
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        response._body.id = '8d888880-c4c0-4ef6-8258-c8dc35baaec7'
+        const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: 'descricao2'});
 
-//         expect(taskUpdated.status).toEqual(404);
-//     })
+        expect(taskUpdated.status).toEqual(404);
+    })
     
-// })
+})
 
 
 // describe('TaskController delete tests', ()=>{
