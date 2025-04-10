@@ -28,6 +28,13 @@ class TaskRepository{
 
         return row;
     }
+
+    async update(id, title, description){
+        console.log('chegou aqui')
+        const [ row ] = await database('tasks').where('id', id).update({title: title, description: description}, [id, title, description]). returning('*');
+
+        return row;
+    }
 }
 
 module.exports = new TaskRepository();
