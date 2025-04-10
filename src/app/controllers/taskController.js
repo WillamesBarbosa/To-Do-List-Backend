@@ -1,6 +1,5 @@
 const deleteTask = require("../services/deleteTask/deleteTask");
 const findTaskById = require("../services/findTaskById/findTaskById");
-const updateTask = require("../services/updateTask/updateTask");
 const responsesHTTP = require("../utils/helpers/responsesHTTPS");
 const isValidUUID = require("../utils/validators/isValidUUID");
 const verifyParams = require("../utils/validators/verifyParams");
@@ -60,13 +59,13 @@ class TaskController{
             throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
         }
 
-        const taskForUpdate = findTaskById(id, bd);
+        const taskForUpdate = await TaskRepository.findById(id);
 
         if(!taskForUpdate){
             throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
         }
 
-        const taskUpdated = updateTask(title, description, taskForUpdate, bd);
+        const taskUpdated = await TaskRepository.update(id, title, description);
 
         return response.status(responsesHTTP.SUCCESS.status).json(taskUpdated);
 
