@@ -7,7 +7,7 @@ beforeAll(() => {
     bd.length = 0;
 
     return database.schema.createTable('tasks', (table) => {
-      table.increments('id').primary();
+      table.text('id').primary();
       table.string('title').notNullable();
       table.text('description');
     });
@@ -34,6 +34,35 @@ describe('TaskController index tests', ()=>{
 
     })
 })
+
+
+describe('TaskController show tests', ()=>{
+    test('Should return 400 because the id is invalid', async()=>{
+        const server = app;
+        const response = await request(server).get('/task/123456');
+    
+        expect(response.status).toEqual(400);
+    })
+
+
+    test('Should return 201 because id exists', async()=>{
+        const server = app;
+
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const id = response.body.id;
+        const requisition = await request(server).get('/task' + '/' + id);
+        expect(requisition.status).toEqual(200)
+    })
+
+    test('Should return 404 if task does not exists', async()=>{
+        const server = app;
+        const identification = '40833333-521b-4cfe-860d-224c0330e87a';
+
+        const requisition = await request(server).get('/task' + '/' + identification);
+        expect(requisition.status).toEqual(404);
+    })
+})
+
 
 describe('TaskController store tests', ()=>{
     test('Should return status 201, description and title', async()=>{
