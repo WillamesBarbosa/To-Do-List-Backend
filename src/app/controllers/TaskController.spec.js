@@ -1,5 +1,4 @@
 const request = require('supertest');
-
 const app = require('../../index');
 const bd = require('../../database/database')
 const database = require('../../database/config/config-knex');
@@ -18,7 +17,7 @@ beforeAll(() => {
 describe('TaskController index tests', ()=>{
     test('Should return 204 if bd equals 0', async()=>{
         const server = app;
-        const response = await request(server).get('/task')
+        const response = await request(server).get('/tasks')
     
         expect(response.status).toEqual(204)
     })
@@ -28,7 +27,7 @@ describe('TaskController index tests', ()=>{
         const server = app;
 
         await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
-        const response = await request(server).get('/task');
+        const response = await request(server).get('/tasks');
         const [ {id} ] = response.body;
         expect(response.status).toEqual(200)
         expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao'}]);
@@ -78,8 +77,6 @@ describe('TaskController store tests', ()=>{
 
     })
 })
-
-
 
 // describe('TaskController update tests', ()=>{
 //     test('Should return the updated object', async ()=>{
