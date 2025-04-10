@@ -1,4 +1,5 @@
 const database = require("../../database/config/config-knex");
+const generateUUID = require("../utils/helpers/generateUUID");
 
 class TaskRepository{
     async findAll(){
@@ -9,14 +10,17 @@ class TaskRepository{
 
     async findById(id){
         const row = await database('tasks').where('id', id);
+        if(row.length === 0){
+            return null;
+        }
 
-        console.log(row)
         return row;
     }
 
     async create(title, description){
-        console.log('chegou aqui')
+        const id = generateUUID();
         const data = {
+            id: id,
             title: title,
             description: description
         }
