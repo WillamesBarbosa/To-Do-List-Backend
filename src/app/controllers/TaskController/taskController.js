@@ -4,6 +4,7 @@ const isValidUUID = require("../../utils/validators/isValidUUID");
 const verifyParams = require("../../utils/validators/verifyParams");
 const ErrorsHTTP = require("../../utils/helpers/ErrorsHTTP");
 const TaskRepository = require("../../repositories/TaskRepository");
+const generateUUID = require("../../utils/helpers/generateUUID");
 
 
 class TaskController{
@@ -38,7 +39,9 @@ class TaskController{
             throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
         }
 
-        const task = await TaskRepository.create(title, description);
+        const id = generateUUID();
+
+        const task = await TaskRepository.create(id, title, description);
 
         return response.status(responsesHTTP.CREATED.status).json(task);
     }
