@@ -28,7 +28,7 @@ class TaskRepository{
     }
 
     async update(id, title, description){
-        const [ row ] = await database('tasks').where('id', id).update({title: title, description: description}, [id, title, description]). returning('*');
+        const [ row ] = await database('tasks').where('id', id).update({title: title, description: description}). returning('*');
 
         return row;
     }
