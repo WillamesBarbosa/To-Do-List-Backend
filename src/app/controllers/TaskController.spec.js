@@ -1,10 +1,8 @@
 const request = require('supertest');
 const app = require('../../index');
-const bd = require('../../database/database')
 const database = require('../../database/config/config-knex');
 
 beforeAll(() => {
-    bd.length = 0;
 
     return database.schema.createTable('tasks', (table) => {
       table.text('id').primary();
@@ -13,6 +11,13 @@ beforeAll(() => {
     });
   });
 
+  beforeEach(() => {
+    return database('tasks').del();
+  });
+  
+  afterAll(() => {
+    return database.destroy();
+  });
 
 describe('TaskController index tests', ()=>{
     test('Should return 204 if bd equals 0', async()=>{
@@ -138,7 +143,8 @@ describe('TaskController update tests', ()=>{
         const server = app;
 
         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
-        const taskUpdatedWithTitleEmpty = await request(server).put('/task/'+response._body.id).send({title: '', description: 'descricao2'});
+        const taskUpdatedWithTitleEmpty = await request(server).put('/task/'+response._body.id)
+        .send({title: '', description: 'descricao2'});
         const taskUpdatedWithDescriptionEmpty = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: ''});
 
         expect(taskUpdatedWithTitleEmpty.status).toEqual(400);
@@ -158,31 +164,46 @@ describe('TaskController update tests', ()=>{
 })
 
 
-// describe('TaskController delete tests', ()=>{
-//     test('Should return an array and have deleted the correct task', async ()=>{
-//         const server = app;
+describe('TaskController delete tests', ()=>{
+    test('Should return an array and have deleted the correct task', async ()=>{
+        const server = app;
 
 
-//         await request(server).post('/task').send({title: 'titulo1', description: 'descricao'});
-//         const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
-//         await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo1', description: 'descricao'});
+        const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
 
-//         await request(server).delete('/task/'+objForDelete._body.id);
+        await request(server).delete('/task/'+objForDelete._body.id);
 
-//         const checkIfTaskWasDeletedCorrectly = await request(server).get('/task');
+        const checkIfTaskWasDeletedCorrectly = await request(server).get('/tasks');
 
-//         expect(checkIfTaskWasDeletedCorrectly.body).toHaveLength(2);
-//     })
+        expect(checkIfTaskWasDeletedCorrectly.body).toHaveLength(2);
+    })
     
-//     test('should return status 200', async ()=>{
-//         const server = app;
+    test('should return status 200', async ()=>{
+        const server = app;
 
-//         await request(server).post('/task').send({title: 'titulo1', description: 'descricao'});
-//         const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
-//         await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo1', description: 'descricao'});
+        const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
 
-//         const objDeleted = await request(server).delete('/task/'+objForDelete._body.id);
-//         expect(objDeleted.status).toEqual(200);
+        const objDeleted = await request(server).delete('/task/'+objForDelete._body.id);
+        expect(objDeleted.status).toEqual(200);
 
-//     })
-// })
+    })
+
+    test('Should return 400 because the id is invalid', async()=>{
+        const server = app;
+        const response = await request(server).delete('/task/123456');
+    
+        expect(response.status).toEqual(400);
+    })
+
+    test('Should return 404 if task does not exists', async()=>{
+        const server = app;
+        const identification = '40833333-521b-4cfe-860d-224c0330e87a';
+
+        const requisition = await request(server).delete('/task' + '/' + identification);
+        expect(requisition.status).toEqual(404);
+    })
+})
