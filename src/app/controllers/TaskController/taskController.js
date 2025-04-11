@@ -1,9 +1,9 @@
 
-const responsesHTTP = require("../utils/helpers/responsesHTTPS");
-const isValidUUID = require("../utils/validators/isValidUUID");
-const verifyParams = require("../utils/validators/verifyParams");
-const ErrorsHTTP = require("../utils/helpers/ErrorsHTTP");
-const TaskRepository = require("../repositories/TaskRepository");
+const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
+const isValidUUID = require("../../utils/validators/isValidUUID");
+const verifyParams = require("../../utils/validators/verifyParams");
+const ErrorsHTTP = require("../../utils/helpers/ErrorsHTTP");
+const TaskRepository = require("../../repositories/TaskRepository");
 
 
 class TaskController{
