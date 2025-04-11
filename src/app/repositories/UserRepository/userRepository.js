@@ -1,6 +1,16 @@
 const database = require('../../../database/config/config-knex');
 
 class UserRepository{
+
+    async findById(id){
+        const row = await database('tasks').where('id', id);
+        if(row.length === 0){
+            return null;
+        }
+
+        return row;
+    }
+
     async create(id, name, email, password){
         const data = {
             id, name, email, password,
