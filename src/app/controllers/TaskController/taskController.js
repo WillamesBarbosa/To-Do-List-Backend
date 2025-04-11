@@ -3,7 +3,7 @@ const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
 const isValidUUID = require("../../utils/validators/isValidUUID");
 const verifyParams = require("../../utils/validators/verifyParams");
 const ErrorsHTTP = require("../../utils/helpers/ErrorsHTTP");
-const TaskRepository = require("../../repositories/TaskRepository");
+const TaskRepository = require("../../repositories/TaskRepository/TaskRepository");
 const generateUUID = require("../../utils/helpers/generateUUID");
 
 
