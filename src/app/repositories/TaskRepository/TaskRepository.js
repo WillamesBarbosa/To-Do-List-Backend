@@ -1,4 +1,4 @@
-const database = require("../../database/config/config-knex");
+const database = require("../../../database/config/config-knex");
 
 class TaskRepository{
     async findAll(){
