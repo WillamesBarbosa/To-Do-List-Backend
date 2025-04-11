@@ -1,9 +1,7 @@
-const deleteTask = require("../services/deleteTask/deleteTask");
-const findTaskById = require("../services/findTaskById/findTaskById");
+
 const responsesHTTP = require("../utils/helpers/responsesHTTPS");
 const isValidUUID = require("../utils/validators/isValidUUID");
 const verifyParams = require("../utils/validators/verifyParams");
-const bd = require('../../database/database');
 const ErrorsHTTP = require("../utils/helpers/ErrorsHTTP");
 const TaskRepository = require("../repositories/TaskRepository");
 
@@ -79,13 +77,13 @@ class TaskController{
             throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
         }
 
-        const taskForDelete = findTaskById(id, bd);
+        const taskForDelete = await TaskRepository.findById(id);
 
         if(!taskForDelete){
             throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
         }
 
-        deleteTask(taskForDelete.index, bd);
+        await TaskRepository.delete(id)
 
         return response.status(responsesHTTP.SUCCESS.status).json(responsesHTTP.SUCCESS);
 
