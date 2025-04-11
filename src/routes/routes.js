@@ -1,7 +1,7 @@
 const Router = require('express');
 const router = Router();
 
-const TaskController = require('../app/controllers/TaskController');
+const TaskController = require('../app/controllers/TaskController/taskController');
 const httpErrorHandler = require('../middlewares/httpErrorMiddleware');
 const resolver = require('../app/utils/adapter/resolverHandlerFn');
 
