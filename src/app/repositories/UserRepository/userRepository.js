@@ -3,7 +3,7 @@ const database = require('../../../database/config/config-knex');
 class UserRepository{
 
     async findById(id){
-        const row = await database('tasks').where('id', id);
+        const row = await database('users').where('id', id);
         if(row.length === 0){
             return null;
         }
