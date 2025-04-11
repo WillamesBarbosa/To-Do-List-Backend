@@ -11,6 +11,15 @@ class UserRepository{
         return row;
     }
 
+    async findByEmail(email){
+        const row = await database('users').where('email', email);
+        if(row.length === 0){
+            return null;
+        }
+
+        return row;
+    }
+
     async create(id, name, email, password){
         const data = {
             id, name, email, password,
