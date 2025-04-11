@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+console.log('Rodando em ambiente:', process.env.NODE_ENV);
 
 module.exports = {
   test: {
