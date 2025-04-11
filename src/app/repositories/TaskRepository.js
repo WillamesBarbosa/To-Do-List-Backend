@@ -1,5 +1,4 @@
 const database = require("../../database/config/config-knex");
-const generateUUID = require("../utils/helpers/generateUUID");
 
 class TaskRepository{
     async findAll(){
@@ -17,8 +16,7 @@ class TaskRepository{
         return row;
     }
 
-    async create(title, description){
-        const id = generateUUID();
+    async create(id, title, description){
         const data = {
             id: id,
             title: title,
