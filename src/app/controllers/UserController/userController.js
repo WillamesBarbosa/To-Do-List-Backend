@@ -7,7 +7,15 @@ const verifyParams = require("../../utils/validators/verifyParams/verifyParams")
 const isValidEmail = require('../../utils/validators/isValidEmail/isValidEmail');
 
 class UserController{
-async store(request, response){
+
+    async index(request, response){
+        const users = await userRepository.findAll();
+        if(users.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT, responsesHTTP.NO_CONTENT.status);
+
+        return response.status(responsesHTTP.SUCCESS.status).json(users);
+    }
+
+    async store(request, response){
         const {name, email, password} = request.body;
         
         const parameterValidation = verifyParams(name, email, password);
