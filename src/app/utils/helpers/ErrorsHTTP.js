@@ -1,7 +1,7 @@
 class ErrorsHTTP extends Error{
     constructor(message, statusCode){
-        super(message);
-        this.message = message;
+        super();
+        this.message = message,
         this.statusCode = statusCode;
     }
 }
