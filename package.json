@@ -8,7 +8,8 @@
     "https": "^1.0.0",
     "knex": "^3.1.0",
     "pg": "^8.13.1",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "validator": "^13.15.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
