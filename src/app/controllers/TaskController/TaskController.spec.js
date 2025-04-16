@@ -86,7 +86,7 @@ describe('TaskController store tests', ()=>{
         const response = await request(server).post('/task').send({title: '', description: 'description'});
 
         expect(response.status).toEqual(400);
-        expect(response.body).toHaveProperty('error', 'Title is required.');
+        expect(response.body).toEqual({error: 'Title is required.'});
         
     })
 
@@ -94,9 +94,8 @@ describe('TaskController store tests', ()=>{
         const server = app;
 
         const response = await request(server).post('/task').send({title: 'title', description: ''});
-
         expect(response.status).toEqual(400);
-        expect(response.body).toHaveProperty('error', 'Description is required.');
+        expect(response.body).toEqual({ error: 'Description is required.'});
         
     })
 
@@ -117,10 +116,8 @@ describe('TaskController update tests', ()=>{
         const server = app;
 
         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
-        console.log('vamos ver o id', response._body.id)
         
         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'});
-        console.log(taskUpdated._body.id)
         expect(taskUpdated.body).toHaveProperty('id', response._body.id);
         expect(taskUpdated.body).toHaveProperty('title', 'titulo2');
         expect(taskUpdated.body).toHaveProperty('description', 'descricao2');
