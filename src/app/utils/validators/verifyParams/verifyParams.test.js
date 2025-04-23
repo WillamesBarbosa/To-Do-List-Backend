@@ -1,4 +1,4 @@
-const verifyParams = require('../verifyParams');
+const verifyParams = require('../verifyParams/verifyParams');
 
 test('Should return true if title and description exist', ()=>{
     const title = 'Titulo';
