@@ -1,5 +1,5 @@
 const userRepository = require("../../repositories/UserRepository/userRepository");
-const hashPassword = require("../../services/HashPassword/hashPassword");
+const hashPassword = require("../../services/hashPassword/hashPassword");
 const ErrorsHTTP = require("../../utils/helpers/ErrorsHTTP");
 const generateUUID = require("../../utils/helpers/generateUUID");
 const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
