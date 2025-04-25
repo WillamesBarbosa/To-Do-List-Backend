@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 const https = require('https');
@@ -21,9 +22,13 @@ const app = express();
 // For convert JSON on Js Object
 app.use(express.json());
 
+const ambient = process.env.NODE_ENV;
+
+const PORT = ambient === 'test' ? 0 : 3000
+
 const corsOptions = {
   credentials: true,
-  origin: 'https://localhost:3000',
+  origin: `https://localhost:${PORT}`,
 };
 
 // For minimize erros about cors
@@ -41,13 +46,10 @@ const options = {
   cert: fs.readFileSync('ssl/code.crt'),
 };
 
-// Server port
-const port = 3000;
-
 // Function for create the HTTPS server
 const server = https.createServer(options, app);
 
 // Calling the function to start the server.
-server.listen(port, () => console.log(textInitialWhenConnect));
+server.listen(PORT, () => console.log(textInitialWhenConnect));
 
 module.exports =  app;
