@@ -34,7 +34,7 @@ class TaskController{
     async store(request, response){
         const {title, description} = request.body;
 
-        const parameterValidation = verifyParams(title, description)
+        const parameterValidation = verifyParams({ title, description })
         if(!parameterValidation.valid){
             throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
         }
@@ -48,14 +48,14 @@ class TaskController{
 
     async update(request, response){
         const { id } = request.params;
-        const {title, description} = request.body;
+        const { title, description } = request.body;
 
         const isIdvalid = isValidUUID(id);
         if(!isIdvalid){
             throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status);
         }
 
-        const tasksVerified = verifyParams(title, description);
+        const tasksVerified = verifyParams({ title, description });
         if(!tasksVerified.valid){
             throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
         }
