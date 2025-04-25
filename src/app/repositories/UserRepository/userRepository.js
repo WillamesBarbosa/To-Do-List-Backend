@@ -35,6 +35,12 @@ class UserRepository{
         
         return row;
     }
+
+    async update(id, name, email){
+        const [ row ] = await database('users').where('id', id).update({name, email, updated_at: new Date()}).returning('*');
+
+        return row;
+    }
 }
 
 module.exports =  new UserRepository();
