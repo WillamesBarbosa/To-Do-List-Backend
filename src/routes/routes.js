@@ -14,6 +14,7 @@ router.delete('/task/:id', resolver(TaskController.delete));
 
 router.get('/users', resolver(userController.index));
 router.post('/user', resolver(userController.store));
+router.put('/user', resolver(userController.update));
 router.use(httpErrorHandler)
 
 module.exports = router;
