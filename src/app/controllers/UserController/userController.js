@@ -18,7 +18,7 @@ class UserController{
     async store(request, response){
         const {name, email, password} = request.body;
         
-        const parameterValidation = verifyParams(name, email, password);
+        const parameterValidation = verifyParams({ name, email, password });
         if(!parameterValidation.valid){
             throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
         }
@@ -30,12 +30,34 @@ class UserController{
         const emailAlreadyExist =  await userRepository.findByEmail(email);
         if(emailAlreadyExist) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
         
-            const id = generateUUID();
+        const id = generateUUID();
         
         const hashedPassword = await hashPassword(password)
         const user = await userRepository.create(id, name, email, hashedPassword);
 
         return response.status(responsesHTTP.CREATED.status).json(user);
+    }
+
+    async update(request, response){
+        const id = request.params;
+        const { name, email } = request.body;
+
+        const parameterValidation = verifyParams(name, email);
+        if(!parameterValidation.valid) throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
+
+        const emailIsValid = isValidEmail(email);
+        if(!emailIsValid.isValid) throw new ErrorsHTTP(emailIsValid.message, responsesHTTP.BAD_REQUEST.status);
+
+        const idExists = await userRepository.findById(id);
+        if(!idExists) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status);
+
+        const emailAlreadyExist =  await userRepository.findByEmail(email);
+        if(emailAlreadyExist) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status);
+
+        const user = await userRepository.update(name,email);
+
+        return response.status(responsesHTTP.SUCCESS.status).json(user);
+
     }
 }
 
