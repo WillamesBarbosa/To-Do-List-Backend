@@ -1,9 +1,15 @@
-function verifyParams(title, description) {
-    if(!title) return {valid: false, message: { error: 'Title is required.' }}
-    if(!description) return {valid: false, message: { error: 'Description is required.' }}
-
-
-    return {valid: true};
-}
-
-module.exports = verifyParams;
+function verifyParams(requiredFields = {}) {
+    for (const [key, value] of Object.entries(requiredFields)) {
+      if (!value) {
+        return {
+          valid: false,
+          message: { error: `${key.charAt(0).toUpperCase() + key.slice(1)} is required.` }
+        };
+      }
+    }
+  
+    return { valid: true };
+  }
+  
+  module.exports = verifyParams;
+  
