@@ -22,6 +22,27 @@ beforeAll(() => {
     return database.destroy();
   });
 
+  describe('Index tests', ()=>{
+    test('should return error 204 if not exist users', async()=>{
+      const server = app;
+
+      const response = await request(server).get('/users');
+
+      expect(response.status).toEqual(204);
+    });
+
+    test('Should return users', async ()=>{
+      const server = app;
+
+      await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' })
+      await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' })
+      const response= await request(server).get('/users');
+
+      expect(response.body.length).toEqual(2);
+
+    })
+  })
+
   describe('Store tests', ()=>{
 
     test('Should return name is required and status 400', async()=>{
@@ -69,4 +90,61 @@ beforeAll(() => {
         expect(response.body.email).toEqual('email@email.com');
     })
 
+  })
+
+  describe('UserController update test', ()=>{
+    test('Should return Name is required and status 400 ', async ()=>{
+      const server = app;
+
+      const user = await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
+      const userid = user.body.id;
+      const response = await request(server).put(`/user/${userid}`).send({ name: '', email: 'email@email.com' });
+
+      expect(response.status).toEqual(400);
+      expect(response.body).toEqual({ "error": "Name is required."});
+    })
+
+    test('Should return Email is invalid and status 400 ', async ()=>{
+      const server = app;
+
+      const user = await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
+      const userid = user.body.id;
+      const response = await request(server).put(`/user/${userid}`).send({ name: 'name', email: 'emailemail.com' });
+
+      expect(response.status).toEqual(400);
+      expect(response.body).toEqual({ "error": "Email is invalid."});
+    })
+
+    
+    test('Should return status 404 if id not exist ', async ()=>{
+      const server = app;
+
+      await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
+      const userid = '5e2f3333-9986-4118-98c6-d01b63692c50';
+
+      const response = await request(server).put(`/user/${userid}`).send({ name: 'name', email: 'email@email.com' });
+      expect(response.status).toEqual(404);
+    })
+
+    test('Should return status 400 if email exist ', async ()=>{
+      const server = app;
+
+      const user = await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
+
+      const response = await request(server).put('/user/'+user.body.id).send({ name: 'name', email: 'email@email.com' });
+
+      expect(response.status).toEqual(400);
+    })
+
+    test('Should return status 200 and user updated', async ()=>{
+      const server = app;
+
+      const user = await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
+
+      const response = await request(server).put('/user/'+user.body.id).send({ name: 'name2', email: 'email1@email.com' });
+
+      expect(response.status).toEqual(200);
+      expect(response.body.email).toEqual('email1@email.com');
+      expect(response.body.name).toEqual('name2');
+    })
   })
