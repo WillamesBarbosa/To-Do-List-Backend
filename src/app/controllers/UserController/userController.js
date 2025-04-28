@@ -5,6 +5,7 @@ const generateUUID = require("../../utils/helpers/generateUUID");
 const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
 const verifyParams = require("../../utils/validators/verifyParams/verifyParams");
 const isValidEmail = require('../../utils/validators/isValidEmail/isValidEmail');
+const updateAt = require("../../utils/helpers/updateAt/updateAt");
 
 class UserController{
 
@@ -39,10 +40,10 @@ class UserController{
     }
 
     async update(request, response){
-        const id = request.params;
+        const { id } = request.params;
         const { name, email } = request.body;
 
-        const parameterValidation = verifyParams(name, email);
+        const parameterValidation = verifyParams({ name, email });
         if(!parameterValidation.valid) throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
 
         const emailIsValid = isValidEmail(email);
@@ -54,7 +55,8 @@ class UserController{
         const emailAlreadyExist =  await userRepository.findByEmail(email);
         if(emailAlreadyExist) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status);
 
-        const user = await userRepository.update(name,email);
+        const updatedAt = updateAt();
+        const user = await userRepository.update(id, name, email, updatedAt);
 
         return response.status(responsesHTTP.SUCCESS.status).json(user);
 
