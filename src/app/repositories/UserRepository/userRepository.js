@@ -36,8 +36,8 @@ class UserRepository{
         return row;
     }
 
-    async update(id, name, email){
-        const [ row ] = await database('users').where('id', id).update({name, email, updated_at: new Date()}).returning('*');
+    async update(id, name, email, updateAt){
+        const [ row ] = await database('users').where('id', id).update({name, email, updated_at: updateAt}).returning('*');
 
         return row;
     }
