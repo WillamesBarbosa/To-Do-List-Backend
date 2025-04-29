@@ -93,6 +93,14 @@ beforeAll(() => {
   })
 
   describe('UserController update test', ()=>{
+    test('Should return 400 status if id is invalid', async()=>{
+      const server = app;
+      
+      const response = await request(server).put(`/user/${'123456'}`).send({name: 'name', email: 'email@email.com'});
+
+      expect(response.status).toEqual(400);
+    })
+
     test('Should return Name is required and status 400 ', async ()=>{
       const server = app;
 
