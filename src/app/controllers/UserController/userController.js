@@ -6,6 +6,7 @@ const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
 const verifyParams = require("../../utils/validators/verifyParams/verifyParams");
 const isValidEmail = require('../../utils/validators/isValidEmail/isValidEmail');
 const updateAt = require("../../utils/helpers/updateAt/updateAt");
+const isValidUUID = require("../../utils/validators/isValidUUid/isValidUUID");
 
 class UserController{
 
@@ -42,6 +43,9 @@ class UserController{
     async update(request, response){
         const { id } = request.params;
         const { name, email } = request.body;
+
+        const isIdvalid = isValidUUID(id);
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
 
         const parameterValidation = verifyParams({ name, email });
         if(!parameterValidation.valid) throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
