@@ -156,3 +156,37 @@ beforeAll(() => {
       expect(response.body.name).toEqual('name2');
     })
   })
+
+  describe('UserController delete tests', ()=>{
+    test('Should return 400 status if id is invalid', async()=>{
+      const server = app;
+      
+      const response = await request(server).delete(`/user/${'123456'}`);
+
+      expect(response.status).toEqual(400);
+    })
+
+    test('Should return 404 status if not find id', async()=>{
+      const server = app;
+
+      const userid = '5e2f3333-9986-4118-98c6-d01b63692c50';
+
+      const response = await request(server).delete(`/user/${userid}`);
+
+      expect(response.status).toEqual(404);
+    })
+
+    test('Should return 200 if delete user', async()=>{
+      const server = app;
+
+      const response = await request(server).post('/user').send({name: 'name', email: 'email@email.com', password: 'password'});
+      const objForDelete = await request(server).delete(`/user/${response.body.id}`)
+      
+      const verifyUserQuantities = await request(server).get('/users');
+      console.log(verifyUserQuantities.body)
+
+      expect(objForDelete.status).toEqual(200);
+      expect(verifyUserQuantities.status).toEqual(204);
+
+    })
+  })
