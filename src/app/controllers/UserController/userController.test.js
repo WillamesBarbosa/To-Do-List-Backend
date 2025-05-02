@@ -183,7 +183,6 @@ beforeAll(() => {
       const objForDelete = await request(server).delete(`/user/${response.body.id}`)
       
       const verifyUserQuantities = await request(server).get('/users');
-      console.log(verifyUserQuantities.body)
 
       expect(objForDelete.status).toEqual(200);
       expect(verifyUserQuantities.status).toEqual(204);
