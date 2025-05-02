@@ -41,6 +41,13 @@ class UserRepository{
 
         return row;
     }
+
+    
+    async delete(id){
+        const row = await database('users').where('id', id).del();
+
+        return row;
+    }
 }
 
 module.exports =  new UserRepository();
