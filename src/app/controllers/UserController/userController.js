@@ -65,6 +65,21 @@ class UserController{
         return response.status(responsesHTTP.SUCCESS.status).json(user);
 
     }
+
+    async delete(request, response){
+        const { id } = request.params;
+
+        const isIdvalid = isValidUUID(id);
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
+
+        const idExists = await userRepository.findById(id);
+        if(!idExists)throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
+
+        await userRepository.delete(id)
+
+        return response.status(responsesHTTP.SUCCESS.status).json(responsesHTTP.SUCCESS);
+
+    }
 }
 
 module.exports = new UserController();
