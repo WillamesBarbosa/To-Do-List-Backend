@@ -81,6 +81,15 @@ beforeAll(() => {
         expect(response.body).toEqual({ "error": "Email is invalid." })
     })
 
+    test('Should return 400 status if email already exists', async()=>{
+      const server = app;
+
+      await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
+      const response = await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
+
+      expect(response.status).toEqual(400);
+    })
+
     test('Should return status 201 and user created', async()=>{
         const server =  app;
 
