@@ -1,5 +1,11 @@
 const verifyParams = require('../verifyParams/verifyParams');
 
+test('Shold return false if dont receive props', async()=>{
+    const validation = verifyParams();
+
+    expect(validation.valid).toEqual(false)
+})
+
 test('Should return true if title and description exist', ()=>{
     const title = 'Titulo';
     const description = 'Descrição';
