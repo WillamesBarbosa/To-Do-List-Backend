@@ -31,7 +31,7 @@ class UserRepository{
             id: id, name: name, email: email, password: password,
         }
 
-        const [ row ] = await database('users').insert(data).returning('*');
+        const [ row ] = await database('users').insert(data).returning(['id', 'name', 'email', 'created_at']);
         
         return row;
     }
