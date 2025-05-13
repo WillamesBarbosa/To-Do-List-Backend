@@ -5,6 +5,9 @@ const TaskController = require('../app/controllers/TaskController/taskController
 const UserController = require('../app/controllers/UserController/userController');
 const httpErrorHandler = require('../middlewares/httpErrorMiddleware');
 const resolver = require('../app/utils/adapter/resolverHandlerFn');
+const LoginController = require('../app/controllers/LoginController/loginController');
+
+router.post('/login', resolver(LoginController.login))
 
 router.get('/tasks', resolver(TaskController.index));
 router.get('/task/:id', resolver(TaskController.show));
