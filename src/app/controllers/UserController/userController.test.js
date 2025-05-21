@@ -43,6 +43,37 @@ beforeAll(() => {
     })
   })
 
+  describe('Index tests', ()=>{
+    test('should return error 400 if id is invalid', async()=>{
+      const server = app;
+      
+      const id = 'dnskadnamskdqi'
+      const response = await request(server).get(`/user/${id}`);
+
+      expect(response.status).toEqual(400);
+    });
+
+    test('Should return status 404 if id not exist ', async ()=>{
+      const server = app;
+
+      const userid = '5e2f3333-9986-4118-98c6-d01b63692c50';
+
+      const response = await request(server).get(`/user/${userid}`);
+      expect(response.status).toEqual(404);
+    })
+    
+    test('should return user', async()=>{
+      const server = app;
+
+      const user = await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' })
+      const id = user.body.id;
+      const response = await request(server).get(`/user/${id}`);
+
+      const userFinded = response;
+
+      expect(userFinded.body[0].name).toEqual('name');
+    })
+  })
   describe('Store tests', ()=>{
 
     test('Should return name is required and status 400', async()=>{
