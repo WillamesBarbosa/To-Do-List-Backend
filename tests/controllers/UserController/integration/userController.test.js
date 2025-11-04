@@ -1,17 +1,12 @@
 const request = require('supertest');
-const app = require('../../../index');
-const database = require('../../../database/config/config-knex');
+const app = require('../../../../src/index');
+const database = require('../../../../src/database/config/config-knex');
+const generateTable = require('../../../../src/app/utils/helpers/generateTable/generateTable');
 
-beforeAll(() => {
 
-    return database.schema.createTable('users', (table) => {
-      table.text('id').primary();
-      table.string('name').notNullable();
-      table.string('email').notNullable().unique();
-      table.string('password').notNullable();
-      table.timestamp('created_at').defaultTo(new Date());
-      table.timestamp('updated_at').nullable();
-    });
+beforeAll(async () => {
+    await generateTable('users');
+
   });
 
   beforeEach(() => {
