@@ -1,6 +1,6 @@
 const request = require('supertest');
-const app = require('../../../index');
-const database = require('../../../database/config/config-knex');
+const app = require('../../../../src/index');
+const database = require('../../../../src/database/config/config-knex');
 
 beforeAll(() => {
 
