@@ -1,4 +1,4 @@
-const hashGenerate = require('./hashGenerate');
+const hashGenerate = require('../../../../../src/app/utils/helpers/hashGenerate');
 
 test('Should return different hash', ()=>{
     const hash1 = hashGenerate('data');

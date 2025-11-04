@@ -1,4 +1,4 @@
-const verifyParams = require('../verifyParams/verifyParams');
+const verifyParams = require('../../../../../src/app/utils/validators/verifyParams/verifyParams');
 
 test('Shold return false if dont receive props', async()=>{
     const validation = verifyParams();

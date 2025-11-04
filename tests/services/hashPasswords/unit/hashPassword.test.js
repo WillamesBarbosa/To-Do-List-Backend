@@ -1,4 +1,4 @@
-const hashPassword = require('../hashPassword/hashPassword');
+const hashPassword = require('../../../../src/app/services/hashPassword/hashPassword');
 
 describe('Should test hashPassword', ()=>{
     test('Should return hashed password', async ()=>{
