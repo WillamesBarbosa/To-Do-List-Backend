@@ -25,6 +25,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
     "start": "cross-env NODE_ENV=production node src/index.js",
-    "test": "cross-env NODE_ENV=test jest --runInBand"
+    "test:unit": "cross-env NODE_ENV=test jest --config=jest.unit.config.js --runInBand",
+    "test:integration": "cross-env NODE_ENV=test jest --config=jest.integration.config.js --runInBand"
   }
 }
