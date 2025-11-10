@@ -2,21 +2,21 @@ const request = require('supertest');
 const app = require('../../../../src/index');
 const database = require('../../../../src/database/config/config-knex');
 
-beforeAll(() => {
+beforeAll(async() => {
 
-    return database.schema.createTable('tasks', (table) => {
+    await database.schema.createTable('tasks', (table) => {
       table.text('id').primary();
       table.string('title').notNullable();
       table.text('description');
     });
   });
 
-  beforeEach(() => {
-    return database('tasks').del();
+  beforeEach(async() => {
+    await database('tasks').del();
   });
   
-  afterAll(() => {
-    return database.destroy();
+  afterAll(async() => {
+    await database.destroy();
   });
 
 describe('TaskController index tests', ()=>{

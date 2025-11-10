@@ -9,12 +9,12 @@ beforeAll(async () => {
 
   });
 
-  beforeEach(() => {
-    return database('users').del();
+  beforeEach(async() => {
+    await database('users').del();
   });
   
-  afterAll(() => {
-    return database.destroy();
+  afterAll(async() => {
+    await database.destroy();
   });
 
   describe('Index tests', ()=>{
