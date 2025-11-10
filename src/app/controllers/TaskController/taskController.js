@@ -10,7 +10,7 @@ const generateUUID = require("../../utils/helpers/generateUUID");
 class TaskController{
     async index(request, response){
         const task = await TaskRepository.findAll();
-        if(task.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT, responsesHTTP.NO_CONTENT.status);
+        if(task.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT.message, responsesHTTP.NO_CONTENT.status);
 
         return response.status(responsesHTTP.SUCCESS.status).json(task);
     }
@@ -19,12 +19,12 @@ class TaskController{
         const { id } = request.params;
         const isIdvalid = isValidUUID(id);
         if(!isIdvalid){
-            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
+            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
         }        
 
         const task = await TaskRepository.findById(id);
         if(!task){
-            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
+            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
         }
 
         return response.status(responsesHTTP.SUCCESS.status).json(task);
@@ -52,18 +52,18 @@ class TaskController{
 
         const isIdvalid = isValidUUID(id);
         if(!isIdvalid){
-            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status);
+            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
         }
 
         const tasksVerified = verifyParams({ title, description });
         if(!tasksVerified.valid){
-            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
+            throw new ErrorsHTTP(tasksVerified.message, responsesHTTP.BAD_REQUEST.status)
         }
 
         const taskForUpdate = await TaskRepository.findById(id);
 
         if(!taskForUpdate){
-            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
+            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
         }
 
         const taskUpdated = await TaskRepository.update(id, title, description);
@@ -77,18 +77,18 @@ class TaskController{
 
         const isIdvalid = isValidUUID(id);
         if(!isIdvalid){
-            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
+            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
         }
 
         const taskForDelete = await TaskRepository.findById(id);
 
         if(!taskForDelete){
-            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
+            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
         }
 
         await TaskRepository.delete(id)
 
-        return response.status(responsesHTTP.SUCCESS.status).json(responsesHTTP.SUCCESS);
+        return response.status(responsesHTTP.SUCCESS.status).json(responsesHTTP.SUCCESS.message);
 
     }
 }

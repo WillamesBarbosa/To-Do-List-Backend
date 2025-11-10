@@ -12,7 +12,7 @@ class UserController{
 
     async index(request, response){
         const users = await userRepository.findAll();
-        if(users.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT, responsesHTTP.NO_CONTENT.status);
+        if(users.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT.message, responsesHTTP.NO_CONTENT.status);
 
         return response.status(responsesHTTP.SUCCESS.status).json(users);
     }
@@ -21,10 +21,10 @@ class UserController{
     async show(request, response){
     const { id } = request.params;
     const isIdvalid = isValidUUID(id);
-    if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)      
+    if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)      
 
     const user = await userRepository.findById(id);
-    if(!user) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
+    if(!user) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
 
     return response.status(responsesHTTP.SUCCESS.status).json(user);
 
@@ -43,7 +43,7 @@ class UserController{
 
 
         const emailAlreadyExist =  await userRepository.findByEmail(email);
-        if(emailAlreadyExist) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
+        if(emailAlreadyExist) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
         
         const id = generateUUID();
         
@@ -58,7 +58,7 @@ class UserController{
         const { name, email } = request.body;
 
         const isIdvalid = isValidUUID(id);
-        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
 
         const parameterValidation = verifyParams({ name, email });
         if(!parameterValidation.valid) throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
@@ -67,10 +67,10 @@ class UserController{
         if(!emailIsValid.isValid) throw new ErrorsHTTP(emailIsValid.message, responsesHTTP.BAD_REQUEST.status);
 
         const idExists = await userRepository.findById(id);
-        if(!idExists) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status);
+        if(!idExists) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status);
 
         const emailAlreadyExist =  await userRepository.findByEmail(email);
-        if(emailAlreadyExist && emailAlreadyExist.email !== email) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status);
+        if(emailAlreadyExist && emailAlreadyExist.email !== email) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
 
         const updatedAt = updateAt();
         const user = await userRepository.update(id, name, email, updatedAt);
@@ -83,10 +83,10 @@ class UserController{
         const { id } = request.params;
 
         const isIdvalid = isValidUUID(id);
-        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST, responsesHTTP.BAD_REQUEST.status)
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
 
         const idExists = await userRepository.findById(id);
-        if(!idExists)throw new ErrorsHTTP(responsesHTTP.NOT_FOUND, responsesHTTP.NOT_FOUND.status)
+        if(!idExists)throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
 
         await userRepository.delete(id)
 
