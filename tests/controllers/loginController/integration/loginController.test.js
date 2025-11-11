@@ -1,17 +1,11 @@
 const request = require('supertest');
-const app = require('../../../index');
-const database = require('../../../database/config/config-knex');
+const app = require('../../../../src/index');
+const database = require('../../../../src/database/config/config-knex');
+const generateTable = require('../../../../src/app/utils/helpers/generateTable/generateTable');
 
-beforeAll(() => {
+beforeAll(async () => {
+    await generateTable('users');
 
-    return database.schema.createTable('users', (table) => {
-      table.text('id').primary();
-      table.string('name').notNullable();
-      table.string('email').notNullable().unique();
-      table.string('password').notNullable();
-      table.timestamp('created_at').defaultTo(new Date());
-      table.timestamp('updated_at').nullable();
-    });
   });
 
   beforeEach(() => {
@@ -73,7 +67,8 @@ describe('loginController tests', ()=>{
       await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' });
 
       const login = await request(server).post('/login').send({ email: 'email2@email.com', password: 'password' })
-  
+
+      console.log(login.body)
       expect(login.status).toEqual(200);
   })
 })
