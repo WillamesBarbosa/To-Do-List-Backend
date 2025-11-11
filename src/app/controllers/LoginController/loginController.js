@@ -13,7 +13,6 @@ class LoginController {
         
         const emailIsValid = isValidEmail(email);
         if(!emailIsValid.isValid) throw new ErrorsHTTP(emailIsValid.message, responsesHTTP.BAD_REQUEST.status);
-        console.log(email)
 
         const token = await loginService(email, password);
         if(!token.isValid) throw new ErrorsHTTP(token.message, responsesHTTP.BAD_REQUEST.status);

@@ -2,7 +2,6 @@ const { findByEmail } = require("../../repositories/UserRepository/userRepositor
 const generateToken = require("../generateToken/generateToken");
 
 async function loginService(email, password){
-    console.log('chegou aqui no service')
         const user = await findByEmail(email);
         if(!user) return { isValid: false, message: { error: 'Email not found.'} }
         
