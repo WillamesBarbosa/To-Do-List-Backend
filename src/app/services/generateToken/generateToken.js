@@ -18,7 +18,7 @@ async function generateToken(user, password){
 
     const token = await jwt.sign(
         {
-            id: user.id
+            id: userObj.id
         }, 
         tokenSecret,
         {
