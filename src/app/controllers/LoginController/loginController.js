@@ -17,7 +17,7 @@ class LoginController {
         const token = await loginService(email, password);
         if(!token.isValid) throw new ErrorsHTTP(token.message, responsesHTTP.BAD_REQUEST.status);
 
-        return response.status(200).json(token.token);
+        return response.status(200).json({ token: token.token });
     }
 }
 
