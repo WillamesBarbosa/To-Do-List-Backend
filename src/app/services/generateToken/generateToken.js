@@ -6,7 +6,7 @@ async function generateToken(user, password){
     const firstText = process.env.PASS_FIRSTTEXT;
     const secondText = process.env.PASS_SECONDTEXT;
     const toCompare = `${firstText}${password}${secondText}`;
-    const [ userObj ] = user;
+    const userObj  = user;
 
     const tokenSecret = process.env.TOKEN_SECRET; 
     const tokenExpiration = process.env.TOKEN_EXPIRATION;

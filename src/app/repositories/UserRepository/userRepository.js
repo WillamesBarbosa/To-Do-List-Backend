@@ -9,21 +9,16 @@ class UserRepository{
     }
 
     async findById(id){
-        const row = await database('users').where('id', id);
-        if(row.length === 0){
-            return null;
-        }
+        const row = await database('users').where('id', id).first();
 
-        return row;
+
+        return row || null;
     }
 
     async findByEmail(email){
-        const row = await database('users').where('email', email);
-        if(row.length === 0){
-            return null;
-        }
+        const row = await database('users').where('email', email).first();
 
-        return row;
+        return row || null;
     }
 
     async create(id, name, email, password){
