@@ -4,9 +4,7 @@ const responsesHTTP = require("../../app/utils/helpers/responsesHTTPS");
 
 async function authenticationMiddleware(request, response, next){
     const token = request.headers.authorization;
-
     const decode = await authenticationService(token);
-    console.log(decode)
     if(!decode.isValid) next( new ErrorsHTTP(decode.message, responsesHTTP.UNAUTHORIZED.status) );
 
     request.id = decode.id;

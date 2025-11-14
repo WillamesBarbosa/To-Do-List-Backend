@@ -12,8 +12,7 @@ async function authenticationService(token){
         if(error.name === 'TokenExpiredError'){
             return { isValid: false, message: { error: 'Token expired.'}}
         }
-        
-        console.log(error)
+               
         return { isValid: false, message: { error: 'Token invalid.'}}
 
     }
