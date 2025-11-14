@@ -32,15 +32,12 @@ class UserController{
 
     async store(request, response){
         const {name, email, password} = request.body;
-        
         const parameterValidation = verifyParams({ name, email, password });
         if(!parameterValidation.valid){
             throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
         }
-
         const emailIsValid = isValidEmail(email);
-        if(!emailIsValid.isValid) throw new ErrorsHTTP(emailIsValid.message, responsesHTTP.BAD_REQUEST.status);
-
+        if(!emailIsValid.isValid) throw new ErrorsHTTP(emailIsValid.message, responsesHTTP.BAD_REQUEST.status); 
 
         const emailAlreadyExist =  await userRepository.findByEmail(email);
         if(emailAlreadyExist) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
@@ -56,8 +53,8 @@ class UserController{
     async update(request, response){
         const { id } = request.params;
         const { name, email } = request.body;
-
         const isIdvalid = isValidUUID(id);
+
         if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
 
         const parameterValidation = verifyParams({ name, email });
@@ -70,7 +67,8 @@ class UserController{
         if(!idExists) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status);
 
         const emailAlreadyExist =  await userRepository.findByEmail(email);
-        if(emailAlreadyExist && emailAlreadyExist.email !== email) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
+
+        if(emailAlreadyExist && emailAlreadyExist.id !== id) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
 
         const updatedAt = updateAt();
         const user = await userRepository.update(id, name, email, updatedAt);
@@ -81,7 +79,7 @@ class UserController{
 
     async delete(request, response){
         const { id } = request.params;
-
+        
         const isIdvalid = isValidUUID(id);
         if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
 
