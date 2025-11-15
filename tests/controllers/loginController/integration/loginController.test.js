@@ -68,7 +68,6 @@ describe('loginController tests', ()=>{
 
       const login = await request(server).post('/login').send({ email: 'email2@email.com', password: 'password' })
 
-      console.log(login.body)
       expect(login.status).toEqual(200);
   })
 })
