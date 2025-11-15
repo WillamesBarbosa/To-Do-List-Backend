@@ -81,7 +81,7 @@ beforeAll(async () => {
 
       const userFinded = response;
 
-      expect(userFinded.body[0].name).toEqual('name');
+      expect(userFinded.body.name).toEqual('name');
     })
   })
 
