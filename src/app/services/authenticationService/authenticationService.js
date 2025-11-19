@@ -3,11 +3,12 @@ require('dotenv').config();
 
 async function authenticationService(token){
     try {
-        const pureToken = token.replace(/^Bearer\s+/i, '');
-        if(pureToken === undefined || pureToken === null) return { isValid: false, message: { error: 'Token not informed'}};
-        const decode = jwt.verify(pureToken, process.env.TOKEN_SECRET);
+        if(token === undefined || token === null) return { isValid: false, message: { error: 'Token not informed'}};
         
-        return { isValid: true, decode};
+        const pureToken = token.replace(/^Bearer\s+/i, '');
+        const decoded = jwt.verify(pureToken, process.env.TOKEN_SECRET);
+        
+        return { isValid: true, decoded};
     } catch (error) {
         if(error.name === 'TokenExpiredError'){
             return { isValid: false, message: { error: 'Token expired.'}}
