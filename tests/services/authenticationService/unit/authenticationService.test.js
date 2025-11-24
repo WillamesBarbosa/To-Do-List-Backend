@@ -51,7 +51,6 @@ describe('Test authenticationService', ()=>{
             'Bearer kbUabGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQiLCJpYXQiOjE2ODUzNTE4MDAsImV4cCI6MTY4NTM1NTQwMH0.DpQj-X1G0EYqRs0k4EPvb732xgvYrTddmQew6FYEWzo'
         );
 
-        console.log(result)
         expect(result.isValid).toEqual(true)
         expect(result.decoded).toEqual(
             'kbUabGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQiLCJpYXQiOjE2ODUzNTE4MDAsImV4cCI6MTY4NTM1NTQwMH0.DpQj-X1G0EYqRs0k4EPvb732xgvYrTddmQew6FYEWzo'
