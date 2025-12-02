@@ -20,9 +20,9 @@ router.post('/task', resolver(TaskController.store));
 
 router.use(authenticationMiddleware);
 
-router.get('/user/:id', resolver(UserController.show));
-router.delete('/user/:id', resolver(UserController.delete))
-router.put('/user/:id', resolver(UserController.update));
+router.get('/user', resolver(UserController.show));
+router.delete('/user', resolver(UserController.delete))
+router.put('/user', resolver(UserController.update));
 
 router.get('/task/:id', resolver(TaskController.show));
 router.put('/task/:id', resolver(TaskController.update));

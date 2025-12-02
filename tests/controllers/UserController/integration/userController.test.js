@@ -47,41 +47,13 @@ beforeAll(async () => {
   })
 
   describe('Show tests', ()=>{
-    test('should return error 400 if id is invalid', async()=>{
-      const server = app;
-      const token = await createUserTokenToTest(app, userToJWT)
-      
-      const id = 'dnskadnamskdqi'
-      const response = await request(server).get(`/user/${id}`)
-      .set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toEqual(400);
-    });
-
-    test('Should return status 404 if id not exist ', async ()=>{
-      const server = app;
-      const token = await createUserTokenToTest(app, userToJWT)
-      
-      const userid = '5e2f3333-9986-4118-98c6-d01b63692c50';
-      
-      const response = await request(server).get(`/user/${userid}`)
-      .set('Authorization', `Bearer ${token}`);
-      expect(response.status).toEqual(404);
-    })
-    
     test('should return user', async()=>{
       const server = app;
       const token = await createUserTokenToTest(app, userToJWT)
-
-      const user = await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' })
-      const id = user.body.id;
-
-      const response = await request(server).get(`/user/${id}`)
+      const response = await request(server).get(`/user`)
       .set('Authorization', `Bearer ${token}`);
 
-      const userFinded = response;
-
-      expect(userFinded.body.name).toEqual('name');
+      expect(response.body.name).toEqual('name');
     })
   })
 
@@ -145,24 +117,12 @@ beforeAll(async () => {
   })
 
   describe('UserController update test', ()=>{
-    test('Should return 400 status if id is invalid', async()=>{
-      const server = app;
-      const token = await createUserTokenToTest(app, userToJWT)
-      
-      const response = await request(server).put(`/user/${'123456'}`).send({name: 'name', email: 'email@email.com'})
-      .set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toEqual(400);
-    })
 
     test('Should return Name is required and status 400 ', async ()=>{
       const server = app;
       const token = await createUserTokenToTest(server, userToJWT)
 
-      const user = await request(server).post('/user').send({ name: 'name', email: 'emailToUpdate@email.com', password: 'senha123' });
-      const userid = user.body.id
-
-      const response = await request(server).put(`/user/${userid}`).send({ name: '', email: 'emaildiferenciado@email.com' })
+      const response = await request(server).put(`/user`).send({ name: '', email: 'emaildiferenciado@email.com' })
       .set('Authorization', `Bearer ${token}`);
       
       expect(response.status).toEqual(400);
@@ -173,26 +133,11 @@ beforeAll(async () => {
       const server = app;
       const token = await createUserTokenToTest(app, userToJWT)
       
-      const user = await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
-      const userid = user.body.id;
-      const response = await request(server).put(`/user/${userid}`).send({ name: 'name', email: 'emailemail.com' })
+      const response = await request(server).put(`/user`).send({ name: 'name', email: 'emailemail.com' })
       .set('Authorization', `Bearer ${token}`);
       
       expect(response.status).toEqual(400);
       expect(response.body).toEqual({ "error": "Email is invalid."});
-    })
-    
-    
-    test('Should return status 404 if id not exist ', async ()=>{
-      const server = app;
-      const token = await createUserTokenToTest(app, userToJWT)
-      
-      await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
-      const userid = '5e2f3333-9986-4118-98c6-d01b63692c50';
-      
-      const response = await request(server).put(`/user/${userid}`).send({ name: 'name', email: 'email@email.com' })
-      .set('Authorization', `Bearer ${token}`);
-      expect(response.status).toEqual(404);
     })
     
     test('Should return status 400 if email exist ', async ()=>{
@@ -200,8 +145,7 @@ beforeAll(async () => {
       const token = await createUserTokenToTest(app, userToJWT)
       
       await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
-      const user2 = await request(server).post('/user').send({ name: 'name', email: 'email1@email.com', password: 'password' });
-      const response = await request(server).put('/user/'+user2.body.id).send({ name: 'name', email: 'email@email.com' })
+      const response = await request(server).put('/user').send({ name: 'name', email: 'email@email.com' })
       .set('Authorization', `Bearer ${token}`);
       
       expect(response.status).toEqual(400);
@@ -210,10 +154,8 @@ beforeAll(async () => {
     test('Should return status 200 and user updated', async ()=>{
       const server = app;
       const token = await createUserTokenToTest(app, userToJWT)
-      
-      const user = await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
-      
-      const response = await request(server).put('/user/'+user.body.id).send({ name: 'name2', email: 'email1@email.com' })
+            
+      const response = await request(server).put('/user').send({ name: 'name2', email: 'email1@email.com' })
       .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toEqual(200);
@@ -223,41 +165,14 @@ beforeAll(async () => {
   })
 
   describe('UserController delete tests', ()=>{
-    test('Should return 400 status if id is invalid', async()=>{
-      const server = app;
-      const token = await createUserTokenToTest(app, userToJWT)
-      
-      const response = await request(server).delete(`/user/${'123456'}`)
-      .set('Authorization', `Bearer ${token}`);
-      
-      expect(response.status).toEqual(400);
-    })
-
-    test('Should return 404 status if not find id', async()=>{
-      const server = app;
-      const token = await createUserTokenToTest(app, userToJWT)
-      
-      const userid = '5e2f3333-9986-4118-98c6-d01b63692c50';
-      
-      const response = await request(server).delete(`/user/${userid}`)
-      .set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toEqual(404);
-    })
-
     test('Should return 200 if delete user', async()=>{
       const server = app;
       const token = await createUserTokenToTest(app, userToJWT)
 
-      const response = await request(server).post('/user').send({name: 'name', email: 'email@email.com', password: 'password'})
-      const objForDelete = await request(server).delete(`/user/${response.body.id}`)
+      const objForDelete = await request(server).delete(`/user`)
       .set('Authorization', `Bearer ${token}`);
-      
-      //Should have a user because a token
-      const verifyUserQuantities = await request(server).get('/users');
 
       expect(objForDelete.status).toEqual(200);
-      expect(verifyUserQuantities.body.length).toEqual(1);
 
     })
   })
