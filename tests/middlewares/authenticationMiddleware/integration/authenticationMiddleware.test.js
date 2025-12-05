@@ -1,10 +1,18 @@
-const request = require('supertest');
+const request = require('supertest')
 const app = require('../../../../src/index');
+const generateTable = require('../../../../src/app/utils/helpers/generateTable/generateTable')
+const responsesHTTP = require('../../../../src/app/utils/helpers/responsesHTTPS');
 const database = require('../../../../src/database/config/config-knex');
-const generateTable = require('../../../../src/app/utils/helpers/generateTable/generateTable');
+const createUserTokenToTest = require('../../../../src/app/utils/helpers/createUserTokenToTest/createUserTokenToTest');
+
+  let server = app
+  const user = {
+    name: 'name',
+    email: 'email@gmail.com',
+    password: '123456'
+  }
 
 beforeAll(async() => {
-
     await generateTable('users');
 
   });
@@ -18,57 +26,23 @@ beforeAll(async() => {
   });
 
 describe('loginController tests', ()=>{
-  test('should return 400 status and error message correct if email or password is undefined', async()=>{
-      const server = app;
-      await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' });
-  
-      const loginEmailUndefined = await request(server).post('/login').send({ email: '', password: 'password' })
-      const loginPasswordUndefined = await request(server).post('/login').send({ email: 'email2@email.com', password: '' })
-  
-      expect(loginEmailUndefined.status).toEqual(400);
-      expect(loginPasswordUndefined.status).toEqual(400);
-      expect(loginEmailUndefined.body).toEqual({ error: 'Email is required.' });
-      expect(loginPasswordUndefined.body).toEqual({ error: 'Password is required.' });
-  })
-  
-  test('Should return 400 status and correct message if email is not valid', async()=>{
-      const server = app;
-      await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' });
+  test('Should return Bad Request', async()=>{
+    const response = await request(server).get('/user')
 
-      const login = await request(server).post('/login').send({ email: 'email2email.com', password: 'password' });
-
-      expect(login.status).toEqual(400);
-      expect(login.body).toEqual({ error: 'Email is invalid.' });
+    expect(response.status).toEqual(responsesHTTP.BAD_REQUEST.status)
+    expect(response.body).toEqual(responsesHTTP.BAD_REQUEST.message)
   })
 
-   test('Should return 400 status and correct message if email is not exists', async()=>{
-      const server = app;
-      await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' });
-    
-      const login = await request(server).post('/login').send({ email: 'emaildontexist@email.com', password: 'password' });
+  test('Should return Unauthorized', async()=>{
+    const response = await request(server).get('/user').set('authorization', 'Bearer invalidToken')
 
-      expect(login.status).toEqual(400);
-      expect(login.body).toEqual({ error: 'Email not found.' });
-  }) 
+    expect(response.status).toEqual(responsesHTTP.UNAUTHORIZED.status)
+  })
 
-    test('Should return 400 status and correct message if password is incorrect', async()=>{
-    const server = app;
-    await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' });
-  
-    const login = await request(server).post('/login').send({ email: 'email2@email.com', password: 'passwordincorrect' });
+  test('Should return id in request', async()=>{
+    const token = await createUserTokenToTest(server, user)
+    const response = await request(server).get('/user').set('authorization', token)
 
-    expect(login.status).toEqual(400);
-    expect(login.body).toEqual({ error: 'Password incorrect.' });
-  }) 
-
-
-  test('should return status 200 and token if email exists and password is correct', async()=>{
-      const server = app;
-
-      await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' });
-
-      const login = await request(server).post('/login').send({ email: 'email2@email.com', password: 'password' })
-  
-      expect(login.status).toEqual(200);
+    expect(response.body.id).toEqual(token.id)
   })
 })
