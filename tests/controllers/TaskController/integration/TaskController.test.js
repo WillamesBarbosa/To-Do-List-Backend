@@ -56,7 +56,7 @@ describe('TaskController show tests', ()=>{
     test('Should return 400 because the id is invalid', async()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
-        const response = await request(server).get('/task/123456').set('Authorization', `Bearer ${token}`)
+        const response = await request(server).get('/task/123456').set('Authorization', `Bearer ${token.token}`)
         expect(response.status).toEqual(400);
     })
 
@@ -67,7 +67,7 @@ describe('TaskController show tests', ()=>{
 
         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
         const id = response.body.id;
-        const requisition = await request(server).get('/task' + '/' + id).set('Authorization', `Bearer ${token}`);
+        const requisition = await request(server).get('/task' + '/' + id).set('Authorization', `Bearer ${token.token}`);
         expect(requisition.status).toEqual(200)
     })
 
@@ -76,7 +76,7 @@ describe('TaskController show tests', ()=>{
         const identification = '40833333-521b-4cfe-860d-224c0330e87a';
         const token = await createUserTokenToTest(app, userToJWT)
 
-        const requisition = await request(server).get('/task' + '/' + identification).set('Authorization', `Bearer ${token}`);
+        const requisition = await request(server).get('/task' + '/' + identification).set('Authorization', `Bearer ${token.token}`);
         expect(requisition.status).toEqual(404);
     })
 })
@@ -132,7 +132,7 @@ describe('TaskController update tests', ()=>{
         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
         
         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'})
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${token.token}`);
         expect(taskUpdated.body).toHaveProperty('id', response._body.id);
         expect(taskUpdated.body).toHaveProperty('title', 'titulo2');
         expect(taskUpdated.body).toHaveProperty('description', 'descricao2');
@@ -147,7 +147,7 @@ describe('TaskController update tests', ()=>{
         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
         response._body.id = null;
         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'})
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${token.token}`);
 
         expect(taskUpdated.status).toEqual(400);
 
@@ -159,10 +159,9 @@ describe('TaskController update tests', ()=>{
 
         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
         const taskUpdatedWithTitleEmpty = await request(server).put('/task/'+response._body.id)
-        .send({title: '', description: 'descricao2'}).set('Authorization', `Bearer ${token}`);
-
+        .send({title: '', description: 'descricao2'}).set('Authorization', `Bearer ${token.token}`);
         const taskUpdatedWithDescriptionEmpty = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: ''})
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${token.token}`);
 
 
         expect(taskUpdatedWithTitleEmpty.status).toEqual(400);
@@ -177,7 +176,7 @@ describe('TaskController update tests', ()=>{
         const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
         response._body.id = '8d888880-c4c0-4ef6-8258-c8dc35baaec7'
         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: 'descricao2'})
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${token.token}`);
 
 
         expect(taskUpdated.status).toEqual(404);
@@ -196,7 +195,7 @@ describe('TaskController delete tests', ()=>{
         const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
         await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
 
-        await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${token}`);
+        await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${token.token}`);
 
 
         const checkIfTaskWasDeletedCorrectly = await request(server).get('/tasks');
@@ -213,7 +212,7 @@ describe('TaskController delete tests', ()=>{
         const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
         await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
 
-        const objDeleted = await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${token}`);
+        const objDeleted = await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${token.token}`);
         expect(objDeleted.status).toEqual(200);
 
     })
@@ -223,7 +222,7 @@ describe('TaskController delete tests', ()=>{
 
         const token = await createUserTokenToTest(app, userToJWT)
         
-        const response = await request(server).delete('/task/123456').set('Authorization', `Bearer ${token}`);
+        const response = await request(server).delete('/task/123456').set('Authorization', `Bearer ${token.token}`);
         
         expect(response.status).toEqual(400);
     })
@@ -233,7 +232,7 @@ describe('TaskController delete tests', ()=>{
         const token = await createUserTokenToTest(app, userToJWT)
         const identification = '40833333-521b-4cfe-860d-224c0330e87a';
 
-        const requisition = await request(server).delete('/task' + '/' + identification).set('Authorization', `Bearer ${token}`);
+        const requisition = await request(server).delete('/task' + '/' + identification).set('Authorization', `Bearer ${token.token}`);
         expect(requisition.status).toEqual(404);
     })
 })

@@ -51,7 +51,7 @@ beforeAll(async () => {
       const server = app;
       const token = await createUserTokenToTest(app, userToJWT)
       const response = await request(server).get(`/user`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token.token}`);
 
       expect(response.body.name).toEqual('name');
     })
@@ -123,7 +123,7 @@ beforeAll(async () => {
       const token = await createUserTokenToTest(server, userToJWT)
 
       const response = await request(server).put(`/user`).send({ name: '', email: 'emaildiferenciado@email.com' })
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token.token}`);
       
       expect(response.status).toEqual(400);
       expect(response.body).toEqual({ "error": "Name is required."});
@@ -134,7 +134,7 @@ beforeAll(async () => {
       const token = await createUserTokenToTest(app, userToJWT)
       
       const response = await request(server).put(`/user`).send({ name: 'name', email: 'emailemail.com' })
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token.token}`);
       
       expect(response.status).toEqual(400);
       expect(response.body).toEqual({ "error": "Email is invalid."});
@@ -146,7 +146,7 @@ beforeAll(async () => {
       
       await request(server).post('/user').send({ name: 'name', email: 'email@email.com', password: 'password' });
       const response = await request(server).put('/user').send({ name: 'name', email: 'email@email.com' })
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token.token}`);
       
       expect(response.status).toEqual(400);
     })
@@ -156,7 +156,7 @@ beforeAll(async () => {
       const token = await createUserTokenToTest(app, userToJWT)
             
       const response = await request(server).put('/user').send({ name: 'name2', email: 'email1@email.com' })
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token.token}`);
 
       expect(response.status).toEqual(200);
       expect(response.body.email).toEqual('email1@email.com');
@@ -170,7 +170,7 @@ beforeAll(async () => {
       const token = await createUserTokenToTest(app, userToJWT)
 
       const objForDelete = await request(server).delete(`/user`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token.token}`);
 
       expect(objForDelete.status).toEqual(200);
 
