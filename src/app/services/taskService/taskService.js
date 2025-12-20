@@ -26,17 +26,17 @@ async function getTask(request){
 }
 
 async function create(request){
+        const userId = request.id
         const {title, description} = request.body;
-
+        
         const parameterValidation = verifyParams({ title, description })
         if(!parameterValidation.valid){
             throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
         }
-
+        
         const id = generateUUID();
-
-        const task = await TaskRepository.create(id, title, description);
-
+        
+        const task = await TaskRepository.create(id, title, description, userId);
         return task;
 }
 

@@ -16,12 +16,14 @@ class TaskRepository{
         return row;
     }
 
-    async create(id, title, description){
+    async create(id, title, description, userId){
         const data = {
             id: id,
             title: title,
-            description: description
+            description: description,
+            user_id: userId
         }
+
         const [ row ] = await database('tasks').insert(data).returning('*');
 
         return row;

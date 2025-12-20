@@ -6,6 +6,7 @@
             .references('id')
             .inTable('users')
             .onDelete('CASCADE');
+            // CASCADE pois se o usuario for deletado, suas tasks devem ser apagadas em conjunto
         });
         };
 

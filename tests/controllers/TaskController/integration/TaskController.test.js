@@ -10,6 +10,12 @@ beforeAll(async() => {
       table.text('id').primary();
       table.string('title').notNullable();
       table.text('description');
+      table.text('user_id').notNullable();
+      table
+      .foreign('user_id')
+      .references('id')
+      .inTable('users')
+      .onDelete('CASCADE');
     });
 
     await generateTable('users');
@@ -18,6 +24,7 @@ beforeAll(async() => {
 
   beforeEach(async() => {
     await database('tasks').del();
+    await database('users').del();
   });
   
   afterAll(async() => {
@@ -41,12 +48,16 @@ describe('TaskController index tests', ()=>{
 
     test('Should return 201 and a series of tasks', async()=>{
         const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
 
-        await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
         const response = await request(server).get('/tasks');
-        const [ {id} ] = response.body;
+
+        const [ { id } ] = response.body;
         expect(response.status).toEqual(200)
-        expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao'}]);
+        expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao', user_id: `${token.id}`}]);
 
     })
 })
@@ -65,8 +76,12 @@ describe('TaskController show tests', ()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
 
-        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+    
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
         const id = response.body.id;
+
         const requisition = await request(server).get('/task' + '/' + id).set('Authorization', `Bearer ${token.token}`);
         expect(requisition.status).toEqual(200)
     })
@@ -85,18 +100,22 @@ describe('TaskController show tests', ()=>{
 describe('TaskController store tests', ()=>{
     test('Should return status 201, description and title', async()=>{
         const server = app;
-        
-        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const token = await createUserTokenToTest(app, userToJWT);
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
         expect(response.status).toEqual(201);
         expect(response.body).toHaveProperty('title', 'titulo');
         expect(response.body).toHaveProperty('description', 'descricao');
+        expect(response.body).toHaveProperty('user_id', `${token.id}`);
     })
 
 
     test('Should return status 400 and error Title is required', async ()=>{
         const server = app;
-
-        const response = await request(server).post('/task').send({title: '', description: 'description'});
+        const token = await createUserTokenToTest(app, userToJWT);
+        const response = await request(server).post('/task').send({title: '', description: 'description'})
+        .set('Authorization', `Bearer ${token.token}`);
 
         expect(response.status).toEqual(400);
         expect(response.body).toEqual({error: 'Title is required.'});
@@ -105,8 +124,11 @@ describe('TaskController store tests', ()=>{
 
     test('Should return status 400 and error Description is required', async ()=>{
         const server = app;
+        const token = await createUserTokenToTest(app, userToJWT);
+        
+        const response = await request(server).post('/task').send({title: 'title', description: ''})
+        .set('Authorization', `Bearer ${token.token}`);
 
-        const response = await request(server).post('/task').send({title: 'title', description: ''});
         expect(response.status).toEqual(400);
         expect(response.body).toEqual({ error: 'Description is required.'});
         
@@ -114,8 +136,10 @@ describe('TaskController store tests', ()=>{
 
     test('Should return the created object without the extra property', async ()=>{
         const server = app;
+        const token = await createUserTokenToTest(app, userToJWT);
 
-        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao', extraArg: 'Something'});
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao', extraArg: 'Something'})
+        .set('Authorization', `Bearer ${token.token}`);
     
         expect(response.body).toHaveProperty('title', 'titulo');
         expect(response.body).toHaveProperty('description', 'descricao');
@@ -129,13 +153,15 @@ describe('TaskController update tests', ()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
 
-        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
         
         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'})
         .set('Authorization', `Bearer ${token.token}`);
         expect(taskUpdated.body).toHaveProperty('id', response._body.id);
         expect(taskUpdated.body).toHaveProperty('title', 'titulo2');
         expect(taskUpdated.body).toHaveProperty('description', 'descricao2');
+        expect(taskUpdated.body).toHaveProperty('user_id', `${token.id}`);
 
     })
 
@@ -144,8 +170,11 @@ describe('TaskController update tests', ()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
 
-        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
         response._body.id = null;
+
         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo2', description: 'descricao2'})
         .set('Authorization', `Bearer ${token.token}`);
 
@@ -157,9 +186,12 @@ describe('TaskController update tests', ()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
 
-        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
         const taskUpdatedWithTitleEmpty = await request(server).put('/task/'+response._body.id)
         .send({title: '', description: 'descricao2'}).set('Authorization', `Bearer ${token.token}`);
+
         const taskUpdatedWithDescriptionEmpty = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: ''})
         .set('Authorization', `Bearer ${token.token}`);
 
@@ -173,7 +205,8 @@ describe('TaskController update tests', ()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
 
-        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'});
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
         response._body.id = '8d888880-c4c0-4ef6-8258-c8dc35baaec7'
         const taskUpdated = await request(server).put('/task/'+response._body.id).send({title: 'titulo', description: 'descricao2'})
         .set('Authorization', `Bearer ${token.token}`);
@@ -191,9 +224,12 @@ describe('TaskController delete tests', ()=>{
         const token = await createUserTokenToTest(app, userToJWT)
 
 
-        await request(server).post('/task').send({title: 'titulo1', description: 'descricao'});
-        const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
-        await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo1', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        await request(server).post('/task').send({title: 'titulo3', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
 
         await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${token.token}`);
 
@@ -208,9 +244,12 @@ describe('TaskController delete tests', ()=>{
 
         const token = await createUserTokenToTest(app, userToJWT)
 
-        await request(server).post('/task').send({title: 'titulo1', description: 'descricao'});
-        const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'});
-        await request(server).post('/task').send({title: 'titulo3', description: 'descricao'});
+        await request(server).post('/task').send({title: 'titulo1', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        const objForDelete = await request(server).post('/task').send({title: 'titulo2', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        await request(server).post('/task').send({title: 'titulo3', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
 
         const objDeleted = await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${token.token}`);
         expect(objDeleted.status).toEqual(200);
