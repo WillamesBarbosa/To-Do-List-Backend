@@ -70,7 +70,7 @@ describe('Test create', ()=>{
     test('Should return error 400 title is required', async()=>{
         verifyParams.mockReturnValue({valid: false, message: {error: 'Title is required.'}});
 
-        await expect(taskService.create({body: { title: '', description: 'description'}}))
+        await expect(taskService.create({body: { title: '', description: 'description'}, id: '123e4567-e89b-42d3-a456-426614174010'}))
         .rejects.toMatchObject({
             message: {error: 'Title is required.'},
             statusCode: responsesHTTP.BAD_REQUEST.status
@@ -83,15 +83,17 @@ describe('Test create', ()=>{
         TaskRepository.create = jest.fn().mockResolvedValue({
             id: '123e4567-e89b-42d3-a456-426614174001',
             title: 'title',
-            description: 'description'
+            description: 'description',
+            user_id: '123e4567-e89b-42d3-a456-426614174010'
         })
 
-        const response = await taskService.create({ body: { title: 'title', description: 'description' }});
+        const response = await taskService.create({body: { title: 'title', description: 'description'}, id: '123e4567-e89b-42d3-a456-426614174010'});
 
         expect(response).toEqual({
             id: '123e4567-e89b-42d3-a456-426614174001',
             title: 'title',
-            description: 'description'
+            description: 'description',
+            user_id: '123e4567-e89b-42d3-a456-426614174010',
         })
     })
 
