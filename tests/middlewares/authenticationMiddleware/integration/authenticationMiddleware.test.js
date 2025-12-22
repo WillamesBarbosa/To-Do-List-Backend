@@ -42,6 +42,7 @@ describe('loginController tests', ()=>{
   test('Should return id in request', async()=>{
     const token = await createUserTokenToTest(server, user)
     const response = await request(server).get('/user').set('authorization', token)
+    .set('authorization', `Bearer ${token.token}`);
 
     expect(response.body.id).toEqual(token.id)
   })
