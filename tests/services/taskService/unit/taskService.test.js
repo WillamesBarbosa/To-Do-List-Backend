@@ -206,7 +206,7 @@ describe('Test deleteTask', ()=>{
         })
     })
 
-    test('Should return', async()=>{
+    test('Should return without errors', async()=>{
         isValidUUID.mockReturnValue(true);
         TaskRepository.findById = jest.fn().mockResolvedValue({
             id: '123e4567-e89b-42d3-a456-426614174003',
@@ -216,6 +216,26 @@ describe('Test deleteTask', ()=>{
         TaskRepository.delete = jest.fn().mockResolvedValue(1);
 
         await expect(taskService.deleteTask({ params: { id: '123e4567-e89b-42d3-a456-426614174003' }})).resolves.not.toThrow();
+
+    })
+
+    
+    test('Should return 401 unauthorized if user_id are different of request.id', async()=>{
+        isValidUUID.mockReturnValue(true);
+        TaskRepository.findById = jest.fn().mockResolvedValue({
+            id: '123e4567-e89b-42d3-a456-426614174003',
+            title: 'title2', 
+            description: 'description2',
+            user_id: '157t4567-e89b-42d3-a456-4266141740128',
+
+        })
+
+        await expect(taskService.deleteTask({ 
+            id: '985e4567-e89b-42d3-a456-4266141748794',
+            params: { id: '123e4567-e89b-42d3-a456-426614174003' }})).rejects.toMatchObject({
+            message: responsesHTTP.UNAUTHORIZED.message,
+            statusCode: responsesHTTP.UNAUTHORIZED.status
+        })
 
     })
 })

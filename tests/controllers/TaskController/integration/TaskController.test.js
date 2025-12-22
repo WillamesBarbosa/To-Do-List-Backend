@@ -236,7 +236,7 @@ describe('TaskController update tests', ()=>{
         const taskUpdated = await request(server).put('/task/'+task2._body.id).send({title: 'titulo', description: 'descricao2'})
         .set('Authorization', `Bearer ${user1.token}`); 
         
-        expect(taskUpdated.status).toEqual(401)
+        expect(taskUpdated.status).toEqual(401);
     })
 })
 
@@ -291,11 +291,24 @@ describe('TaskController delete tests', ()=>{
     
     test('Should return 404 if task does not exists', async()=>{
         const server = app;
-        const token = await createUserTokenToTest(app, userToJWT)
+        const token = await createUserTokenToTest(app, userToJWT);
         const identification = '40833333-521b-4cfe-860d-224c0330e87a';
 
         
         const requisition = await request(server).delete('/task' + '/' + identification).set('Authorization', `Bearer ${token.token}`);
         expect(requisition.status).toEqual(404);
+    })
+
+    test('Should return 401 unauthorized if userId are different request.id', async()=>{
+        const server = app;
+        const user1 = await createUserTokenToTest(app, userToJWT);
+        const user2 = await createUserTokenToTest(app, userToJWT2);
+
+        const objForDelete = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${user1.token}`);
+        const objDeleted = await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${user2.token}`);
+        
+        expect(objDeleted.status).toEqual(401);
+
     })
 })

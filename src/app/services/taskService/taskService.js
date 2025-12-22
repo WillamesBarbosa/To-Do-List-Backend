@@ -68,6 +68,7 @@ async function update(request){
 }
 
 async function deleteTask(request){
+        const userId = request.id;
         const { id } = request.params;
 
         const isIdvalid = isValidUUID(id);
@@ -80,6 +81,9 @@ async function deleteTask(request){
         if(!taskForDelete){
             throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
         }
+
+        if(taskForDelete.user_id !== userId) throw new ErrorsHTTP(responsesHTTP.UNAUTHORIZED.message, responsesHTTP.UNAUTHORIZED.status);
+
 
         await TaskRepository.delete(id)
 }
