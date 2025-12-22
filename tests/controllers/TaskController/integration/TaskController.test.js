@@ -37,6 +37,12 @@ const userToJWT = {
     password: '123456'
 }
 
+const userToJWT2 ={
+    name: 'name1',
+    email: 'email1@email.com',
+    password: '123456'
+}
+
 describe('TaskController index tests', ()=>{
     test('Should return 204 if bd equals 0', async()=>{
         const server = app;
@@ -215,6 +221,23 @@ describe('TaskController update tests', ()=>{
         expect(taskUpdated.status).toEqual(404);
     })
     
+    test('Should return 401 if user_id are diferent request.id', async()=>{
+        const server = app;
+        const user1 = createUserTokenToTest(app, userToJWT);
+        const user2 = createUserTokenToTest(app,userToJWT2);
+
+        await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${user1.token}`);
+
+        const task2 = await request(server).post('/task').send({title: 'titulo2', description: 'descricao2'})
+        .set('Authorization', `Bearer ${user2.token}`);
+
+
+        const taskUpdated = await request(server).put('/task/'+task2._body.id).send({title: 'titulo', description: 'descricao2'})
+        .set('Authorization', `Bearer ${user1.token}`); 
+        
+        expect(taskUpdated.status).toEqual(401)
+    })
 })
 
 
@@ -271,6 +294,7 @@ describe('TaskController delete tests', ()=>{
         const token = await createUserTokenToTest(app, userToJWT)
         const identification = '40833333-521b-4cfe-860d-224c0330e87a';
 
+        
         const requisition = await request(server).delete('/task' + '/' + identification).set('Authorization', `Bearer ${token.token}`);
         expect(requisition.status).toEqual(404);
     })

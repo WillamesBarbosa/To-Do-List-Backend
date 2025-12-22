@@ -8,12 +8,10 @@ class TaskRepository{
     }
 
     async findById(id){
-        const row = await database('tasks').where('id', id);
-        if(row.length === 0){
-            return null;
-        }
+        const [ row ] = await database('tasks').where('id', id);
+ 
 
-        return row;
+        return row || null;
     }
 
     async create(id, title, description, userId){

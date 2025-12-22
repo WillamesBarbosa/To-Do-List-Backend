@@ -41,6 +41,7 @@ async function create(request){
 }
 
 async function update(request){
+        const userId = request.id;
         const { id } = request.params;
         const { title, description } = request.body;
 
@@ -55,10 +56,11 @@ async function update(request){
         }
 
         const taskForUpdate = await TaskRepository.findById(id);
-
         if(!taskForUpdate){
             throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
         }
+
+        if(taskForUpdate.user_id !== userId) throw new ErrorsHTTP(responsesHTTP.UNAUTHORIZED.message, responsesHTTP.UNAUTHORIZED.status);
 
         const taskUpdated = await TaskRepository.update(id, title, description);
 

@@ -164,6 +164,26 @@ describe('Test update', ()=>{
             description: 'description2'
         })
     })   
+
+    test('Should return 401 if user_id are diferent request.id', async()=>{
+        isValidUUID.mockReturnValue(true);
+        verifyParams.mockReturnValue({valid: true});
+        TaskRepository.findById = jest.fn().mockResolvedValue({
+            id: '123e4567-e89b-42d3-a456-426614174003',
+            title: 'title', 
+            description: 'description',
+            user_id: '923e4567-e89b-42d3-a456-426614174074'
+        })
+
+        await expect(taskService.update({
+            id: '985e4567-e94b-42d3-a456-426614174894',
+            params: {id: '123e4567-e89b-42d3-a456-426614174003'}, 
+            body: {title: 'title', description: 'description'}
+        })).rejects.toMatchObject({
+            message: responsesHTTP.UNAUTHORIZED.message,
+            statusCode: responsesHTTP.UNAUTHORIZED.status
+        })
+    })
 })
 
 describe('Test deleteTask', ()=>{
