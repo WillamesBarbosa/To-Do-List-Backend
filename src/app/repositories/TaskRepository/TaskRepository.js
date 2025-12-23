@@ -7,8 +7,8 @@ class TaskRepository{
         return rows;
     }
 
-    async findById(id){
-        const [ row ] = await database('tasks').where('id', id);
+    async findById(id, userId){
+        const [ row ] = await database('tasks').where('id', id).andWhere('user_id', userId);
  
 
         return row || null;
