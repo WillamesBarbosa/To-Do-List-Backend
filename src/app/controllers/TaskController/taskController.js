@@ -5,7 +5,7 @@ const taskService = require('../../services/taskService/taskService')
 
 class TaskController{
     async index(request, response){
-        const task = await taskService.findAll()
+        const task = await taskService.findAll(request)
 
         return response.status(responsesHTTP.SUCCESS.status).json(task);
     }

@@ -13,12 +13,12 @@ router.post('/login', resolver(LoginController.login))
 router.get('/users', resolver(UserController.index));
 router.post('/user', resolver(UserController.store));
 
-router.get('/tasks', resolver(TaskController.index));
 
 
 
 router.use(authenticationMiddleware);
 
+router.get('/tasks', resolver(TaskController.index));
 router.post('/task', resolver(TaskController.store));
 router.get('/user', resolver(UserController.show));
 router.delete('/user', resolver(UserController.delete))

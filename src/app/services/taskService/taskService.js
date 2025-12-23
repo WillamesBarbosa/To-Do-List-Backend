@@ -5,20 +5,19 @@ const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
 const isValidUUID = require("../../utils/validators/isValidUUid/isValidUUID");
 const verifyParams = require("../../utils/validators/verifyParams/verifyParams");
 
-async function findAll(){
-        const task = await TaskRepository.findAll();
+async function findAll(request){
+        const userId = request.id;
+        const task = await TaskRepository.findAll(userId);
         if(task.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT.message, responsesHTTP.NO_CONTENT.status);
 
         return task
 }
 
-async function getTask(request){7
+async function getTask(request){
         const userId = request.id;
         const { id } = request.params;
         const isIdvalid = isValidUUID(id);
-        if(!isIdvalid){
-            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
-        }        
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)     
 
         const task = await TaskRepository.findById(id, userId);
         if(!task) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
@@ -31,9 +30,7 @@ async function create(request){
         const {title, description} = request.body;
         
         const parameterValidation = verifyParams({ title, description })
-        if(!parameterValidation.valid){
-            throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
-        }
+        if(!parameterValidation.valid) throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
         
         const id = generateUUID();
         
@@ -47,9 +44,7 @@ async function update(request){
         const { title, description } = request.body;
 
         const isIdvalid = isValidUUID(id);
-        if(!isIdvalid){
-            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
-        }
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
 
         const tasksVerified = verifyParams({ title, description });
         if(!tasksVerified.valid) throw new ErrorsHTTP(tasksVerified.message, responsesHTTP.BAD_REQUEST.status)

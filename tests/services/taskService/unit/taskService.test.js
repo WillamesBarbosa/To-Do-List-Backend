@@ -11,10 +11,11 @@ const taskService = require('../../../../src/app/services/taskService/taskServic
 const responsesHTTP = require('../../../../src/app/utils/helpers/responsesHTTPS');
 
 describe('Test findAll', ()=>{
-    test('Should return 204 No Content', async()=>{
+    test('It should return 204 if the user has no tasks created or if there are no tasks with a user_id matching the authenticated user.',
+        async()=>{
         TaskRepository.findAll = jest.fn().mockResolvedValue([]);
 
-        await expect(taskService.findAll()).rejects.toMatchObject({
+        await expect(taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000'})).rejects.toMatchObject({
             message: responsesHTTP.NO_CONTENT.message,
             statusCode: responsesHTTP.NO_CONTENT.status
         })
@@ -26,7 +27,7 @@ describe('Test findAll', ()=>{
             {title: 'title2', description: 'description'}
         ])
 
-        const response = await taskService.findAll();
+        const response = await taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000'});
 
         expect(response).toEqual([            
             {title: 'title1', description: 'description'}, 

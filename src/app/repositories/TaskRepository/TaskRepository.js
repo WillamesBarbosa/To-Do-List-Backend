@@ -1,8 +1,8 @@
 const database = require("../../../database/config/config-knex");
 
 class TaskRepository{
-    async findAll(){
-        const rows = await database('tasks').select('*');
+    async findAll(userId){
+        const rows = await database('tasks').select('*').where('user_id', userId);
 
         return rows;
     }

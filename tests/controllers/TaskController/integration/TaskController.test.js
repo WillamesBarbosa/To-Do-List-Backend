@@ -46,7 +46,10 @@ const userToJWT2 ={
 describe('TaskController index tests', ()=>{
     test('Should return 204 if bd equals 0', async()=>{
         const server = app;
-        const response = await request(server).get('/tasks')
+        const token = await createUserTokenToTest(app, userToJWT);
+
+        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
+
     
         expect(response.status).toEqual(204)
     })
@@ -59,12 +62,25 @@ describe('TaskController index tests', ()=>{
         await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
         .set('Authorization', `Bearer ${token.token}`);
 
-        const response = await request(server).get('/tasks');
+        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
+
 
         const [ { id } ] = response.body;
         expect(response.status).toEqual(200)
         expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao', user_id: `${token.id}`}]);
 
+    })
+
+    test('Should return 204 not found if userId are different request.id', async()=>{
+        const server = app;
+        const user1 = await createUserTokenToTest(app, userToJWT);
+        const user2 = await createUserTokenToTest(app, userToJWT2);
+        await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${user1.token}`);
+
+        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${user2.token}`);
+        
+        expect(response.status).toEqual(204)
     })
 })
 
@@ -274,7 +290,7 @@ describe('TaskController delete tests', ()=>{
         await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${token.token}`);
 
 
-        const checkIfTaskWasDeletedCorrectly = await request(server).get('/tasks');
+        const checkIfTaskWasDeletedCorrectly = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
 
         expect(checkIfTaskWasDeletedCorrectly.body).toHaveLength(2);
     })
