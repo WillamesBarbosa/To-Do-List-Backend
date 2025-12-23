@@ -64,7 +64,22 @@ describe('Test getTask', ()=>{
 
         expect(response).toEqual({title: 'title2', description: 'description'});
     })
+
+    test('Should return 404 if task exist, but created by different user', async()=>{
+        isValidUUID.mockResolvedValue(true);
+        TaskRepository.findById = jest.fn().mockResolvedValue(null);
+
+        await expect(taskService.getTask({ 
+            id: '498e4567-e89b-42d3-a456-426614174983', 
+            params: { id: '123e4567-e89b-42d3-a456-426614174000' }}))
+        .rejects.toMatchObject({
+            message: responsesHTTP.NOT_FOUND.message,
+            statusCode: responsesHTTP.NOT_FOUND.status
+        })  
+    })
 })
+
+
 
 describe('Test create', ()=>{
     test('Should return error 400 title is required', async()=>{
