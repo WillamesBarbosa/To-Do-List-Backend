@@ -12,14 +12,15 @@ async function findAll(){
         return task
 }
 
-async function getTask(request){
+async function getTask(request){7
+        const userId = request.id;
         const { id } = request.params;
         const isIdvalid = isValidUUID(id);
         if(!isIdvalid){
             throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
         }        
 
-        const task = await TaskRepository.findById(id);
+        const task = await TaskRepository.findById(id, userId);
         if(!task) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
 
         return task;
@@ -51,16 +52,10 @@ async function update(request){
         }
 
         const tasksVerified = verifyParams({ title, description });
-        if(!tasksVerified.valid){
-            throw new ErrorsHTTP(tasksVerified.message, responsesHTTP.BAD_REQUEST.status)
-        }
+        if(!tasksVerified.valid) throw new ErrorsHTTP(tasksVerified.message, responsesHTTP.BAD_REQUEST.status)
 
-        const taskForUpdate = await TaskRepository.findById(id);
-        if(!taskForUpdate){
-            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
-        }
-
-        if(taskForUpdate.user_id !== userId) throw new ErrorsHTTP(responsesHTTP.UNAUTHORIZED.message, responsesHTTP.UNAUTHORIZED.status);
+        const taskForUpdate = await TaskRepository.findById(id, userId);
+        if(!taskForUpdate) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
 
         const taskUpdated = await TaskRepository.update(id, title, description);
 
@@ -72,18 +67,11 @@ async function deleteTask(request){
         const { id } = request.params;
 
         const isIdvalid = isValidUUID(id);
-        if(!isIdvalid){
-            throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
-        }
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
 
-        const taskForDelete = await TaskRepository.findById(id);
+        const taskForDelete = await TaskRepository.findById(id, userId);
 
-        if(!taskForDelete){
-            throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
-        }
-
-        if(taskForDelete.user_id !== userId) throw new ErrorsHTTP(responsesHTTP.UNAUTHORIZED.message, responsesHTTP.UNAUTHORIZED.status);
-
+        if(!taskForDelete) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
 
         await TaskRepository.delete(id)
 }

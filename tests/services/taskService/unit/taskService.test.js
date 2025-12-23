@@ -165,23 +165,18 @@ describe('Test update', ()=>{
         })
     })   
 
-    test('Should return 401 if user_id are diferent request.id', async()=>{
+    test('Should return 404 if user_id are diferent request.id', async()=>{
         isValidUUID.mockReturnValue(true);
         verifyParams.mockReturnValue({valid: true});
-        TaskRepository.findById = jest.fn().mockResolvedValue({
-            id: '123e4567-e89b-42d3-a456-426614174003',
-            title: 'title', 
-            description: 'description',
-            user_id: '923e4567-e89b-42d3-a456-426614174074'
-        })
+        TaskRepository.findById = jest.fn().mockResolvedValue(null)
 
         await expect(taskService.update({
             id: '985e4567-e94b-42d3-a456-426614174894',
             params: {id: '123e4567-e89b-42d3-a456-426614174003'}, 
             body: {title: 'title', description: 'description'}
         })).rejects.toMatchObject({
-            message: responsesHTTP.UNAUTHORIZED.message,
-            statusCode: responsesHTTP.UNAUTHORIZED.status
+            message: responsesHTTP.NOT_FOUND.message,
+            statusCode: responsesHTTP.NOT_FOUND.status
         })
     })
 })
@@ -222,19 +217,13 @@ describe('Test deleteTask', ()=>{
     
     test('Should return 401 unauthorized if user_id are different of request.id', async()=>{
         isValidUUID.mockReturnValue(true);
-        TaskRepository.findById = jest.fn().mockResolvedValue({
-            id: '123e4567-e89b-42d3-a456-426614174003',
-            title: 'title2', 
-            description: 'description2',
-            user_id: '157t4567-e89b-42d3-a456-4266141740128',
-
-        })
+        TaskRepository.findById = jest.fn().mockResolvedValue(null)
 
         await expect(taskService.deleteTask({ 
             id: '985e4567-e89b-42d3-a456-4266141748794',
             params: { id: '123e4567-e89b-42d3-a456-426614174003' }})).rejects.toMatchObject({
-            message: responsesHTTP.UNAUTHORIZED.message,
-            statusCode: responsesHTTP.UNAUTHORIZED.status
+            message: responsesHTTP.NOT_FOUND.message,
+            statusCode: responsesHTTP.NOT_FOUND.status
         })
 
     })

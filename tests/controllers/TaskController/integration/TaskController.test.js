@@ -100,6 +100,23 @@ describe('TaskController show tests', ()=>{
         const requisition = await request(server).get('/task' + '/' + identification).set('Authorization', `Bearer ${token.token}`);
         expect(requisition.status).toEqual(404);
     })
+
+    test('Should return 404 if task exist, but created by different user', async()=>{
+        const server = app;
+        const user1 = await createUserTokenToTest(app, userToJWT);
+        const user2 = await createUserTokenToTest(app, userToJWT2);
+
+        await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${user1.token}`);
+
+        const createTask = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${user2.token}`);
+
+        const response = await request(server).get('/task' + '/' + createTask.body.id).set('Authorization', `Bearer ${user1.token}`);
+
+
+        expect(response.status).toEqual(404);
+    })
 })
 
 
@@ -221,10 +238,10 @@ describe('TaskController update tests', ()=>{
         expect(taskUpdated.status).toEqual(404);
     })
     
-    test('Should return 401 if user_id are diferent request.id', async()=>{
+    test('Should return 404 if user_id are diferent request.id', async()=>{
         const server = app;
-        const user1 = createUserTokenToTest(app, userToJWT);
-        const user2 = createUserTokenToTest(app,userToJWT2);
+        const user1 = await createUserTokenToTest(app, userToJWT);
+        const user2 = await createUserTokenToTest(app,userToJWT2);
 
         await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
         .set('Authorization', `Bearer ${user1.token}`);
@@ -236,7 +253,7 @@ describe('TaskController update tests', ()=>{
         const taskUpdated = await request(server).put('/task/'+task2._body.id).send({title: 'titulo', description: 'descricao2'})
         .set('Authorization', `Bearer ${user1.token}`); 
         
-        expect(taskUpdated.status).toEqual(401);
+        expect(taskUpdated.status).toEqual(404);
     })
 })
 
@@ -299,7 +316,7 @@ describe('TaskController delete tests', ()=>{
         expect(requisition.status).toEqual(404);
     })
 
-    test('Should return 401 unauthorized if userId are different request.id', async()=>{
+    test('Should return 404 not found if userId are different request.id', async()=>{
         const server = app;
         const user1 = await createUserTokenToTest(app, userToJWT);
         const user2 = await createUserTokenToTest(app, userToJWT2);
@@ -308,7 +325,7 @@ describe('TaskController delete tests', ()=>{
         .set('Authorization', `Bearer ${user1.token}`);
         const objDeleted = await request(server).delete('/task/'+objForDelete._body.id).set('Authorization', `Bearer ${user2.token}`);
         
-        expect(objDeleted.status).toEqual(401);
+        expect(objDeleted.status).toEqual(404);
 
     })
 })
