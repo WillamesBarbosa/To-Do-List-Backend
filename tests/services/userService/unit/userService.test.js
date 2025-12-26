@@ -143,7 +143,7 @@ describe('Test update', ()=>{
 
         await expect(userService.update({
             id: '123e4567-e89b-42d3-a456-426614174003', 
-            body: {name: '', email: 'email@email.com'}}))
+            body: {name: ''}}))
         .rejects.toMatchObject({
             message: {error: 'Name is required.'},
             statusCode: responsesHTTP.BAD_REQUEST.status
@@ -151,42 +151,14 @@ describe('Test update', ()=>{
 
     })
 
-    test('Should return 400 if email is invalid', async()=>{
-        verifyParams.mockReturnValue({valid: true});
-        isValidEmail.mockReturnValue({isValid: false, message: {error: 'Email is invalid.'}});
-
-        await expect(userService.update({
-            id: '123e4567-e89b-42d3-a456-426614174003',
-            body: {name: 'name', email: 'email#email.com'}}))
-        .rejects.toMatchObject({
-            message: {error: 'Email is invalid.'},
-            statusCode: responsesHTTP.BAD_REQUEST.status
-        })
-    })
-
-    test('Should return 400 if email already exists', async()=>{
-        verifyParams.mockReturnValue({valid: true});
-        isValidEmail.mockReturnValue({isValid: true});
-        userRepository.findByEmail = jest.fn().mockResolvedValue({
-            id: '123e4567-e89b-42d3-a456-42661417405', 
-            name: 'name',
-            email: 'email@email.com',
-            password: 'password'
-        })       
-
-        await expect(userService.update({
-            id: '123e4567-e89b-42d3-a456-426614174003', 
-            body: {name: 'name', email: 'email@email.com'}}))
-        .rejects.toMatchObject({
-            message: responsesHTTP.BAD_REQUEST.message,
-            statusCode: responsesHTTP.BAD_REQUEST.status
-        })
-    })
-
     test('Should return user updated', async()=>{
         verifyParams.mockReturnValue({valid: true});
-        isValidEmail.mockReturnValue({isValid: true});
-        userRepository.findByEmail = jest.fn().mockResolvedValue(null);
+        userRepository.findById = jest.fn().mockResolvedValue({
+            id: '123e4567-e89b-42d3-a456-426614174003', 
+            name: 'name1',
+            email: 'email@email.com',
+            updateAt: 'Mon Jan 01 2024 00:00:00 GMT+0000'
+        });
 
         updateAt.mockReturnValue('Mon Jan 01 2024 00:00:00 GMT+0000');
         
@@ -201,7 +173,6 @@ describe('Test update', ()=>{
             id: '123e4567-e89b-42d3-a456-426614174003',
             body: {
                 name: 'name',
-                email: 'email@email.com',
             }
         })
 

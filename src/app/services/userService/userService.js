@@ -44,20 +44,15 @@ async function create(request){
 
 async function update(request){
         const id = request.id;
-        const { name, email } = request.body;
+        const { name } = request.body;
         
-        const parameterValidation = verifyParams({ name, email });
+        const parameterValidation = verifyParams({ name });
         if(!parameterValidation.valid) throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
-        
-        const emailIsValid = isValidEmail(email);
-        if(!emailIsValid.isValid) throw new ErrorsHTTP(emailIsValid.message, responsesHTTP.BAD_REQUEST.status);
-        
-        const emailAlreadyExist =  await userRepository.findByEmail(email);
-        
-        if(emailAlreadyExist && emailAlreadyExist.id !== id) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
-        
+
+        const userFinded = await userRepository.findById(id);
+        console.log(userFinded)
         const updatedAt = updateAt();
-        const user = await userRepository.update(id, name, email, updatedAt);
+        const user = await userRepository.update(id, name, userFinded.email, updatedAt);
 
         return user;
 }
