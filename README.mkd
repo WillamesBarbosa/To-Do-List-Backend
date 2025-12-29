@@ -1,0 +1,223 @@
+# To-Do List Backend API
+
+API RESTful para gerenciamento de tarefas (To-Do List), com autenticação de usuários, controle de acesso por proprietário da tarefa e testes automatizados.
+
+Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backend**, **separação de responsabilidades**, **segurança** e **testabilidade**, servindo como um MVP funcional e escalável.
+
+---
+
+## 📌 Features
+
+- Autenticação de usuários via JWT
+- CRUD completo de tarefas
+- Relação **1:N** entre Usuário e Tasks
+- Controle de acesso:
+  - Usuário só pode **listar, visualizar, atualizar e deletar** suas próprias tasks
+- Validação de dados de entrada
+- Tratamento centralizado de erros
+- Testes unitários e de integração
+- Banco relacional com migrations versionadas
+
+---
+
+## 🧠 Regras de Negócio
+
+- Cada **usuário pode ter várias tasks**
+- Cada **task pertence a apenas um usuário**
+- Tasks só podem ser:
+  - Atualizadas pelo usuário que as criou
+  - Deletadas pelo usuário que as criou
+- Caso a task não exista **ou pertença a outro usuário**, a API retorna `404`
+- Tokens inválidos ou ausentes retornam `401`
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Node.js**
+- **Express**
+- **Knex.js**
+- **PostgreSQL** (produção/desenvolvimento)
+- **SQLite (in-memory)** para testes
+- **JWT (JSON Web Token)**
+- **Jest** (testes unitários e de integração)
+- **Supertest**
+
+---
+
+## 📂 Arquitetura do Projeto
+
+src/
+├── app/
+│ ├── controllers/
+│ ├── services/
+│ ├── repositories/
+│ ├── middlewares/
+│ ├── utils/
+│ │ ├── adapter/
+│ │ ├── validators/
+│ │ └── helpers/
+│ └── routes/
+├── database/
+│ ├── config/
+│ └── migrations/
+├── routes
+├── index.js
+tests/
+├── controllers/
+├── middlewares/
+├── services/
+└── utils/
+
+
+Arquitetura baseada em **Controller → Service → Repository**, garantindo:
+- Baixo acoplamento
+- Alta testabilidade
+- Facilidade de manutenção
+
+---
+
+## 🔐 Autenticação
+
+A API utiliza **JWT** para autenticação.
+
+### Header esperado:
+
+Authorization: Bearer <token>
+
+
+Rotas protegidas exigem token válido.
+
+---
+
+## 🚀 Rotas Principais
+
+### Auth
+- `POST /login`
+
+### Tasks
+- `POST /task` – cria uma task
+- `GET /tasks` – lista tasks do usuário autenticado
+- `GET /task/:id` – retorna uma task do usuário autenticado
+- `PUT /task/:id` – atualiza uma task do usuário autenticado
+- `DELETE /task/:id` – remove uma task do usuário autenticado
+
+### Users
+- `POST /user` – cria um usuário
+- `GET /users` – lista todos os usuários
+- `GET /user` – retorna o usuário autenticado
+- `PUT /user` – atualiza os dados do usuário autenticado
+- `DELETE /user` – deleta o usuário
+
+---
+
+## 🧪 Testes
+
+O projeto possui testes **unitários e de integração**, cobrindo:
+
+- Services
+- Controllers
+- Validações
+- Regras de autorização
+- Fluxos de erro
+
+### Rodar os testes:
+```bash
+npm run dev/unit - testes unitários
+```
+
+```bash
+npm run dev/integration - testes de integração
+```
+
+Os testes utilizam SQLite em memória, garantindo isolamento total do banco de produção.
+
+## 🗄️ Banco de Dados
+### Relacionamento
+
+users
+
+tasks
+
+user_id → FK para users.id
+
+### Migrations
+```bash
+npx knex migrate:latest
+```
+
+### Rollback:
+
+```bash
+npx knex migrate:rollback
+```
+
+## ⚙️ Variáveis de Ambiente
+
+Crie um arquivo .env baseado no .env.example:
+```env
+#enviroment
+NODE_ENV=development
+
+
+#development
+DB_HOST=
+DB_PORT=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+
+#passwords informations to incript
+PASS_SALTS=
+PASS_FIRSTTEXT=
+PASS_SECONDTEXT=
+
+
+#JWT CONFIGS
+TOKEN_SECRET=
+TOKEN_EXPIRATION=
+```
+
+## ▶️ Executando o Projeto
+Instalar dependências
+```bash
+npm install
+```
+
+Rodar migrations
+```bash
+npx knex migrate:latest
+```
+
+Iniciar o servidor
+```bash
+npm run dev
+```
+
+
+Servidor disponível em:
+
+```bash
+http://localhost:3000
+```
+
+## 📈 Próximos Passos (Roadmap)
+
+Paginação de tasks
+
+- Status de progresso da task
+- Filtros por status
+- Refresh token
+- Soft delete
+- Logs estruturados
+
+
+## 👨‍💻 Autor
+
+Willames Da Silva Barbosa
+Backend Developer em formação
+Foco em Node.js, arquitetura limpa e testes automatizados.
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
