@@ -46,7 +46,7 @@ Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backen
 ---
 
 ## 📂 Arquitetura do Projeto
-
+```
 src/
 ├── app/
 │ ├── controllers/
@@ -68,7 +68,7 @@ tests/
 ├── middlewares/
 ├── services/
 └── utils/
-
+```
 
 Arquitetura baseada em **Controller → Service → Repository**, garantindo:
 - Baixo acoplamento
