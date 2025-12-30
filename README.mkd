@@ -27,7 +27,7 @@ Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backen
 - Tasks só podem ser:
   - Atualizadas pelo usuário que as criou
   - Deletadas pelo usuário que as criou
-- Caso a task não exista **ou pertença a outro usuário**, a API retorna `404`
+- Caso a task não exista **ou pertença a outro usuário**, a API retorna `404`, já que a decisão de negócio é não revelar caso exista uma task com aquele id
 - Tokens inválidos ou ausentes retornam `401`
 
 ---
@@ -125,22 +125,28 @@ O projeto possui testes **unitários e de integração**, cobrindo:
 ```bash
 npm run dev/unit - testes unitários
 ```
+Garantem que as funções individualmente retornem os resultados esperados e mantenham a lógica de negócio consistente.
 
 ```bash
 npm run dev/integration - testes de integração
 ```
+Validam o comportamento do sistema completo, incluindo:
+
+- Conexão com o banco de dados
+- Autenticação
+- Rotas protegidas por token
 
 Os testes utilizam SQLite em memória, garantindo isolamento total do banco de produção.
 
 ## 🗄️ Banco de Dados
 ### Relacionamento
-
+```bash
 users
 
 tasks
 
 user_id → FK para users.id
-
+```
 ### Migrations
 ```bash
 npx knex migrate:latest
