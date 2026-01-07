@@ -100,7 +100,8 @@ describe('Test create', ()=>{
             id: '123e4567-e89b-42d3-a456-426614174001',
             title: 'title',
             description: 'description',
-            user_id: '123e4567-e89b-42d3-a456-426614174010'
+            user_id: '123e4567-e89b-42d3-a456-426614174010',
+            status: 'not_started',
         })
 
         const response = await taskService.create({body: { title: 'title', description: 'description'}, id: '123e4567-e89b-42d3-a456-426614174010'});
@@ -110,6 +111,7 @@ describe('Test create', ()=>{
             title: 'title',
             description: 'description',
             user_id: '123e4567-e89b-42d3-a456-426614174010',
+            status: 'not_started'
         })
     })
 

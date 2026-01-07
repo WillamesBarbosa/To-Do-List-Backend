@@ -50,7 +50,6 @@ async function update(request){
         if(!parameterValidation.valid) throw new ErrorsHTTP(parameterValidation.message, responsesHTTP.BAD_REQUEST.status);
 
         const userFinded = await userRepository.findById(id);
-        console.log(userFinded)
         const updatedAt = updateAt();
         const user = await userRepository.update(id, name, userFinded.email, updatedAt);
 

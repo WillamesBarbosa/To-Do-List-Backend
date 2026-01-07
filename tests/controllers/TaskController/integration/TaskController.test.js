@@ -10,6 +10,7 @@ beforeAll(async() => {
       table.text('id').primary();
       table.string('title').notNullable();
       table.text('description');
+      table.text('status').notNullable().defaultTo('not_started');
       table.text('user_id').notNullable();
       table
       .foreign('user_id')
@@ -67,7 +68,7 @@ describe('TaskController index tests', ()=>{
 
         const [ { id } ] = response.body;
         expect(response.status).toEqual(200)
-        expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao', user_id: `${token.id}`}]);
+        expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao', user_id: `${token.id}`, status: 'not_started'}]);
 
     })
 
@@ -146,6 +147,7 @@ describe('TaskController store tests', ()=>{
         expect(response.status).toEqual(201);
         expect(response.body).toHaveProperty('title', 'titulo');
         expect(response.body).toHaveProperty('description', 'descricao');
+        expect(response.body).toHaveProperty('status', 'not_started');
         expect(response.body).toHaveProperty('user_id', `${token.id}`);
     })
 
