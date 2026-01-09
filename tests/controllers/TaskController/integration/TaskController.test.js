@@ -275,6 +275,76 @@ describe('TaskController update tests', ()=>{
     })
 })
 
+describe('TaskController updateStatus tests', ()=>{
+    // test('Should return the status updated', async ()=>{
+    //     const server = app;
+    //     const token = await createUserTokenToTest(app, userToJWT)
+
+    //     const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+    //     .set('Authorization', `Bearer ${token.token}`);
+        
+    //     const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: 'in_progress'})
+    //     .set('Authorization', `Bearer ${token.token}`);
+    //     expect(taskUpdated.body).toHaveProperty('id', response._body.id);
+    //     expect(taskUpdated.body).toHaveProperty('title', 'titulo');
+    //     expect(taskUpdated.body).toHaveProperty('description', 'descricao');
+    //     expect(taskUpdated.body).toHaveProperty('status', 'in_progress');
+    //     expect(taskUpdated.body).toHaveProperty('user_id', `${token.id}`);
+
+    // })
+
+    // test('Should return 400 if id is invalid', async()=>{
+    //     const server = app;
+    //     const token = await createUserTokenToTest(app, userToJWT)
+
+    //     const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+    //     .set('Authorization', `Bearer ${token.token}`);
+        
+    //     const taskUpdated = await request(server).patch('/task/'+response._body.id+'1'+'/status').send({nextStatus: 'in_progress'})
+    //     .set('Authorization', `Bearer ${token.token}`);
+
+    //     expect(taskUpdated.status).toEqual(400);
+    // })
+
+    // test('Should return 400 if nextStatus is empty', async()=>{
+    //     const server = app;
+    //     const token = await createUserTokenToTest(app, userToJWT)
+
+    //     const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+    //     .set('Authorization', `Bearer ${token.token}`);
+        
+    //     const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: ''})
+    //     .set('Authorization', `Bearer ${token.token}`);
+
+    //     expect(taskUpdated.status).toEqual(400);
+    // })
+
+    // test('Should return 404 if task does not exist', async()=>{
+    //     const server = app;
+    //     const token = await createUserTokenToTest(app, userToJWT)
+
+    //     const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+    //     .set('Authorization', `Bearer ${token.token}`);
+    //     response._body.id = '8d888880-c4c0-4ef6-8258-c8dc35baaec7'
+    //     const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: 'in_progress'})
+    //     .set('Authorization', `Bearer ${token.token}`);
+
+    //     expect(taskUpdated.status).toEqual(404);
+    // })
+
+    test('Should return 422 if nextStatus does not exist in workflow', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
+
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: 'not_exist'})
+        .set('Authorization', `Bearer ${token.token}`);
+
+        expect(taskUpdated.status).toEqual(400);
+    })
+})
+
 
 describe('TaskController delete tests', ()=>{
     test('Should return an array and have deleted the correct task', async ()=>{

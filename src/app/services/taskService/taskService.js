@@ -1,3 +1,4 @@
+const { canTransition, TASK_STATUS_WORKFLOW } = require("../../domain/Task/taskStatus");
 const TaskRepository = require("../../repositories/TaskRepository/TaskRepository");
 const ErrorsHTTP = require("../../utils/helpers/ErrorsHTTP");
 const generateUUID = require("../../utils/helpers/generateUUID");
@@ -47,14 +48,51 @@ async function update(request){
         if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
 
         const tasksVerified = verifyParams({ title, description });
-        if(!tasksVerified.valid) throw new ErrorsHTTP(tasksVerified.message, responsesHTTP.BAD_REQUEST.status)
+        if(!tasksVerified.valid) throw new ErrorsHTTP(tasksVerified.message, responsesHTTP.BAD_REQUEST.status);
 
         const taskForUpdate = await TaskRepository.findById(id, userId);
-        if(!taskForUpdate) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
+        if(!taskForUpdate) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status);
 
         const taskUpdated = await TaskRepository.update(id, title, description);
 
         return taskUpdated
+}
+
+async function updateStatusTask(request){
+        const userId = request.id
+        const { id } = request.params;
+        const { nextStatus } = request.body;
+
+        const isIdvalid = isValidUUID(id);
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
+        
+        const tasksVerified = verifyParams({ nextStatus });
+        if(!tasksVerified.valid) throw new ErrorsHTTP(tasksVerified.message, responsesHTTP.BAD_REQUEST.status);
+        
+        const taskForUpdateStatus = await TaskRepository.findById(id, userId);
+        if(!taskForUpdateStatus) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status);
+        
+        const currentStatus = taskForUpdateStatus.status;
+        
+        const changeAllowed = canTransition(currentStatus, nextStatus);
+        if(!changeAllowed.isAllowed) {
+                if(!changeAllowed.allowed){
+                        throw new ErrorsHTTP(changeAllowed.message, responsesHTTP.UNPROCESSABLE_ENTITY.status, { allowed: changeAllowed.allowed} );
+
+                }
+
+                throw new ErrorsHTTP(changeAllowed.message, responsesHTTP.BAD_REQUEST.status, { allowed: changeAllowed.allowed });
+        }
+
+        const statusTaskUpdated = await TaskRepository.updateStatus(id, nextStatus);
+
+        const allowedResponse = {
+                ...statusTaskUpdated,
+                nextAllowedStatus: TASK_STATUS_WORKFLOW[nextStatus]
+        }
+
+        return allowedResponse;
+
 }
 
 async function deleteTask(request){
@@ -71,4 +109,4 @@ async function deleteTask(request){
         await TaskRepository.delete(id)
 }
 
-module.exports = { findAll, getTask, create, update, deleteTask};
+module.exports = { findAll, getTask, create, update, updateStatusTask, deleteTask};

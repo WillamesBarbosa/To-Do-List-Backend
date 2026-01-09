@@ -36,6 +36,12 @@ const responsesHTTP = {
       error: 'Conflict',
       message: 'The request could not be completed due to a conflict with the current state of the resource.',
     },
+    UNPROCESSABLE_ENTITY: {
+      status: 422,
+      error: 'Unprocessable Entity',
+      message: 'The request cannot be processed because the entity is not processable.',
+    }
+    ,
     INTERNAL_SERVER_ERROR: {
       status: 500,
       error: 'Internal Server Error',

@@ -30,6 +30,12 @@ class TaskController{
 
     }
 
+    async updateStatus(request, response){
+        const task = await taskService.updateStatusTask(request);
+
+        return response.status(responsesHTTP.SUCCESS.status).json(task);
+    }
+
     async delete(request, response){
         await taskService.deleteTask(request)
 

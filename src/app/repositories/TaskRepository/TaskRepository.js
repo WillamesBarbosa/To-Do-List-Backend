@@ -33,6 +33,12 @@ class TaskRepository{
         return row;
     }
 
+    async updateStatus(id, nextStatus){
+        const [ row ] = await database('tasks').where('id', id).update({status: nextStatus}).returning('*');
+
+        return row
+    }
+
     async delete(id){
         const row = await database('tasks').where('id', id).del();
 

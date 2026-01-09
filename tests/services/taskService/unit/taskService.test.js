@@ -1,10 +1,12 @@
 jest.mock('../../../../src/app/utils/validators/isValidUUid/isValidUUID', ()=> jest.fn())
 jest.mock('../../../../src/app/utils/validators/verifyParams/verifyParams', ()=> jest.fn())
 jest.mock('../../../../src/app/utils/helpers/generateUUID', ()=> jest.fn())
+// jest.mock('../../../../src/app/domain/Task/taskStatus', ()=> jest.fn())
 
 const isValidUUID = require('../../../../src/app/utils/validators/isValidUUid/isValidUUID');
 const verifyParams = require('../../../../src/app/utils/validators/verifyParams/verifyParams');
 const generateUUID = require('../../../../src/app/utils/helpers/generateUUID');
+const taskStatus = require('../../../../src/app/domain/Task/taskStatus');
 
 const TaskRepository = require('../../../../src/app/repositories/TaskRepository/TaskRepository')
 const taskService = require('../../../../src/app/services/taskService/taskService');
@@ -157,7 +159,7 @@ describe('Test update', ()=>{
         })
     })
     
-         test('Should return 404 if id not exists', async()=>{
+    test('Should return 404 if id not exists', async()=>{
         isValidUUID.mockReturnValue(true);
         verifyParams.mockReturnValue({valid: true});
         TaskRepository.findById = jest.fn().mockResolvedValue({
@@ -197,6 +199,167 @@ describe('Test update', ()=>{
             statusCode: responsesHTTP.NOT_FOUND.status
         })
     })
+})
+
+describe('Test updateStatusTask', ()=>{
+    test('Should return 400 if id is invalid', async()=>{
+        isValidUUID.mockReturnValue(false);
+
+        await expect(
+            taskService.updateStatusTask({
+                id: '123e4567-e89b-42d3-a456-426614174003',
+                params: {id: 1},
+                body: {
+                    nextStatus: 'in_progress'
+                } 
+            })).rejects.toMatchObject({
+                message: responsesHTTP.BAD_REQUEST.message,
+                statusCode: responsesHTTP.BAD_REQUEST.status
+            })
+    })
+
+    test('Should return 400 if nextStatus is empty', async()=>{
+        isValidUUID.mockReturnValue(true);
+        verifyParams.mockReturnValue({valid: false, message: {error: 'nextStatus is required.'}})
+
+        await expect(
+            taskService.updateStatusTask({
+                id: '123e4567-e89b-42d3-a456-426614174003',
+                params: {id: '985e4567-e94b-42d3-a456-426614174894'},
+                body: {
+                    nextStatus: ''
+                } 
+            })).rejects.toMatchObject({
+                message: {error: 'nextStatus is required.'},
+                statusCode: responsesHTTP.BAD_REQUEST.status
+            })
+    })
+
+    test('Should return 404 if task not found]', async()=>{
+        isValidUUID.mockReturnValue(true);
+        verifyParams.mockReturnValue({valid: true});
+        TaskRepository.findById = jest.fn().mockResolvedValue(null);
+
+        await expect(
+            taskService.updateStatusTask({
+                id: '123e4567-e89b-42d3-a456-426614174003',
+                params: {id: '985e4567-e94b-42d3-a456-426614174894'},
+                body: {
+                    nextStatus: 'in_progress'
+                } 
+            })).rejects.toMatchObject({
+                message: responsesHTTP.NOT_FOUND.message,
+                statusCode: responsesHTTP.NOT_FOUND.status
+            })
+    })
+
+    test('Should return 422 if nextStatus is invalid', async()=>{
+        isValidUUID.mockReturnValue(true);
+        verifyParams.mockReturnValue({valid: true});
+        TaskRepository.findById = jest.fn().mockResolvedValue({
+            id: "f36b1782-be03-4782-ab46-50e87fd6c564",
+            title: "title",
+            description: "description",
+            created_at: "2026-01-06T23:12:32.835Z",
+            updated_at: null,
+            user_id: "ad0ec5f7-c960-4569-af33-43fd41aa8bb2",
+            status: "finish"
+        });
+        taskStatus.canTransition = jest.fn().mockResolvedValue({
+            isAllowed: false,
+            message: 'Unknown current status "finish".',
+            allowed: null,
+        });
+
+        await expect(
+            taskService.updateStatusTask({
+                id: 'ad0ec5f7-c960-4569-af33-43fd41aa8bb2',
+                params: {id: 'f36b1782-be03-4782-ab46-50e87fd6c564'},
+                body: {
+                    nextStatus: 'in_progress'
+                } 
+            })).rejects.toMatchObject({
+                message: 'Unknown current status "finish".',
+                statusCode: responsesHTTP.UNPROCESSABLE_ENTITY.status
+            })
+    })
+
+    test('Should return 400 if nextStatus does not respect the workflow.', async()=>{
+        isValidUUID.mockReturnValue(true);
+        verifyParams.mockReturnValue({valid: true});
+        TaskRepository.findById = jest.fn().mockResolvedValue({
+            id: "f36b1782-be03-4782-ab46-50e87fd6c564",
+            title: "title",
+            description: "description",
+            created_at: "2026-01-06T23:12:32.835Z",
+            updated_at: null,
+            user_id: "ad0ec5f7-c960-4569-af33-43fd41aa8bb2",
+            status: "not_started"
+        });
+        taskStatus.canTransition = jest.fn().mockReturnValue({
+            isAllowed: false,
+            message: `Cannot transition "not_started" to "done"`,
+            allowed: ["in_progress"],
+        });
+
+        await expect(
+            taskService.updateStatusTask({
+                id: 'ad0ec5f7-c960-4569-af33-43fd41aa8bb2',
+                params: {id: 'f36b1782-be03-4782-ab46-50e87fd6c564'},
+                body: {
+                    nextStatus: 'done'
+                } 
+            })).rejects.toMatchObject({
+                message: `Cannot transition "not_started" to "done"`,
+                statusCode: responsesHTTP.BAD_REQUEST.status,
+                allowed: ["in_progress"],
+            })
+    })   
+    test('Should return status updated', async()=>{
+        isValidUUID.mockReturnValue(true);
+        verifyParams.mockReturnValue({valid: true});
+        TaskRepository.findById = jest.fn().mockResolvedValue({
+            id: "f36b1782-be03-4782-ab46-50e87fd6c564",
+            title: "title",
+            description: "description",
+            created_at: "2026-01-06T23:12:32.835Z",
+            updated_at: null,
+            user_id: "ad0ec5f7-c960-4569-af33-43fd41aa8bb2",
+            status: "not_started"
+        });
+        taskStatus.canTransition = jest.fn().mockReturnValue({
+            isAllowed: true
+        });
+
+        TaskRepository.updateStatus = jest.fn().mockResolvedValue({
+            id: "f36b1782-be03-4782-ab46-50e87fd6c564",
+            title: "title",
+            description: "description",
+            created_at: "2026-01-06T23:12:32.835Z",
+            updated_at: null,
+            user_id: "ad0ec5f7-c960-4569-af33-43fd41aa8bb2",
+            status: "in_progress"
+        })
+
+        const respónse = await taskService.updateStatusTask({
+            id: "ad0ec5f7-c960-4569-af33-43fd41aa8bb2", 
+            params:{id: "f36b1782-be03-4782-ab46-50e87fd6c564"},
+            body:{
+                nextStatus: "in_progress"
+            }
+        })
+
+        expect(respónse).toEqual({
+            id: "f36b1782-be03-4782-ab46-50e87fd6c564",
+            title: "title",
+            description: "description",
+            created_at: "2026-01-06T23:12:32.835Z",
+            updated_at: null,
+            user_id: "ad0ec5f7-c960-4569-af33-43fd41aa8bb2",
+            status: "in_progress",
+            nextAllowedStatus: ["not_started", "done"]
+        })
+    }) 
 })
 
 describe('Test deleteTask', ()=>{
