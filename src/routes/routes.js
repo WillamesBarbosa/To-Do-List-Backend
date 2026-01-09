@@ -18,14 +18,15 @@ router.post('/user', resolver(UserController.store));
 
 router.use(authenticationMiddleware);
 
-router.get('/tasks', resolver(TaskController.index));
-router.post('/task', resolver(TaskController.store));
 router.get('/user', resolver(UserController.show));
 router.delete('/user', resolver(UserController.delete))
 router.put('/user', resolver(UserController.update));
 
+router.get('/tasks', resolver(TaskController.index));
+router.post('/task', resolver(TaskController.store));
 router.get('/task/:id', resolver(TaskController.show));
 router.put('/task/:id', resolver(TaskController.update));
+router.patch('/task/:id/status', resolver(TaskController.updateStatus));
 router.delete('/task/:id', resolver(TaskController.delete));
 
 router.use(httpErrorHandler)
