@@ -10,6 +10,10 @@ Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backen
 
 - Autenticação de usuários via JWT
 - CRUD completo de tarefas
+- Campo de status para cada task:
+  - `not_started`
+  - `in_progress`
+  - `done`
 - Relação **1:N** entre Usuário e Tasks
 - Controle de acesso:
   - Usuário só pode **listar, visualizar, atualizar e deletar** suas próprias tasks
@@ -28,6 +32,7 @@ Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backen
   - Atualizadas pelo usuário que as criou
   - Deletadas pelo usuário que as criou
 - Caso a task não exista **ou pertença a outro usuário**, a API retorna `404`, já que a decisão de negócio é não revelar caso exista uma task com aquele id
+- Status permitidos `not_started`, `in_progress`, `done`
 - Tokens inválidos ou ausentes retornam `401`
 
 ---
@@ -52,6 +57,7 @@ src/
 │ ├── controllers/
 │ ├── services/
 │ ├── repositories/
+│ ├── domain/
 │ ├── middlewares/
 │ ├── utils/
 │ │ ├── adapter/
@@ -66,6 +72,7 @@ src/
 tests/
 ├── controllers/
 ├── middlewares/
+├── domain/
 ├── services/
 └── utils/
 ```
@@ -100,6 +107,7 @@ Rotas protegidas exigem token válido.
 - `GET /tasks` – lista tasks do usuário autenticado
 - `GET /task/:id` – retorna uma task do usuário autenticado
 - `PUT /task/:id` – atualiza uma task do usuário autenticado
+- `PUT /task/:id/status` – atualiza o status da task do usuário autenticado
 - `DELETE /task/:id` – remove uma task do usuário autenticado
 
 ### Users
