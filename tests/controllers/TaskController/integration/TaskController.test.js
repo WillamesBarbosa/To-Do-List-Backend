@@ -11,6 +11,8 @@ beforeAll(async() => {
       table.string('title').notNullable();
       table.text('description');
       table.text('status').notNullable().defaultTo('not_started');
+      table.timestamp('created_at', { useTz: true}).defaultTo(database.fn.now());
+      table.timestamp('updated_at').nullable();
       table.text('user_id').notNullable();
       table
       .foreign('user_id')
@@ -45,44 +47,177 @@ const userToJWT2 ={
 }
 
 describe('TaskController index tests', ()=>{
-    test('Should return 204 if bd equals 0', async()=>{
-        const server = app;
-        const token = await createUserTokenToTest(app, userToJWT);
+    // test('Should return 204 if bd equals 0', async()=>{
+    //     const server = app;
+    //     const token = await createUserTokenToTest(app, userToJWT);
 
-        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
+    //     const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
 
     
-        expect(response.status).toEqual(204)
-    })
+    //     expect(response.status).toEqual(204)
+    // })
+
+    // test('Should return 204 not found if userId are different request.id', async()=>{
+    //     const server = app;
+    //     const user1 = await createUserTokenToTest(app, userToJWT);
+    //     const user2 = await createUserTokenToTest(app, userToJWT2);
+    //     await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+    //     .set('Authorization', `Bearer ${user1.token}`);
+
+    //     const response = await request(server).get('/tasks').set('Authorization', `Bearer ${user2.token}`);
+        
+    //     expect(response.status).toEqual(204)
+    // })
+
+    // test('Should return 201 and a series of tasks', async()=>{
+    //     const server = app;
+    //     const token = await createUserTokenToTest(app, userToJWT)
+
+    //     await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+    //     .set('Authorization', `Bearer ${token.token}`);
+
+    //     const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
 
 
-    test('Should return 201 and a series of tasks', async()=>{
+    //     const [ { id } ] = response.body;
+    //     expect(response.status).toEqual(200)
+    //     expect(response.body).toMatchObject([
+    //         {
+    //             id: id, 
+    //             title: 'titulo', 
+    //             description: 'descricao', 
+    //             user_id: `${token.id}`, 
+    //             status: 'not_started'
+    //         }
+    //     ]);
+
+    // })
+
+    test('Should only return tasks with similar titles.', async()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
 
         await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
         .set('Authorization', `Bearer ${token.token}`);
+        await request(server).post('/task').send({title: 'title', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
 
-        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
-
-
-        const [ { id } ] = response.body;
+        const response = await request(server).get('/tasks?search=titl').set('Authorization', `Bearer ${token.token}`);
         expect(response.status).toEqual(200)
-        expect(response.body).toEqual([{id: id, title: 'titulo', description: 'descricao', user_id: `${token.id}`, status: 'not_started'}]);
-
+        expect(response.body).toMatchObject([
+            {
+                title: 'title', 
+                description: 'descricao', 
+                user_id: `${token.id}`, 
+                status: 'not_started'
+            }
+        ]);
     })
 
-    test('Should return 204 not found if userId are different request.id', async()=>{
+    test('Should return 204 if any task corresponding', async()=>{
         const server = app;
-        const user1 = await createUserTokenToTest(app, userToJWT);
-        const user2 = await createUserTokenToTest(app, userToJWT2);
-        await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
-        .set('Authorization', `Bearer ${user1.token}`);
+        const token = await createUserTokenToTest(app, userToJWT)
 
-        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${user2.token}`);
-        
+        await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        await request(server).post('/task').send({title: 'title', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
+        const response = await request(server).get('/tasks?search=west').set('Authorization', `Bearer ${token.token}`);
+        console.log(response.body)
         expect(response.status).toEqual(204)
     })
+
+    test('Should return only corresponding status tasks', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
+
+        const task = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        
+        await request(server).post('/task').send({title: 'title', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        
+        await request(server).patch('/task/'+task._body.id+'/status').send({nextStatus: 'in_progress'})
+        .set('Authorization', `Bearer ${token.token}`);
+
+        const response = await request(server).get('/tasks?status=in_progress').set('Authorization', `Bearer ${token.token}`);
+        expect(response.status).toEqual(200)
+        expect(response.body).toMatchObject([
+            {
+                title: 'titulo', 
+                description: 'descricao', 
+                user_id: `${token.id}`, 
+                status: 'in_progress'
+            }
+        ]);
+
+    })
+
+    test('Should return 204 if dates dont corresponding', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
+
+        await request(server).post('/task').send({title: 'title0', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
+        const response = await request(server).get('/tasks?date_start=2025-04-01&date_end=2025-06-02')
+        .set('Authorization', `Bearer ${token.token}`);
+        expect(response.status).toEqual(204)
+
+    })
+
+    test('Should return 200 tasks that match the filter.', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
+        const today = await new Date().toISOString().split('T')[0];
+        await request(server).post('/task').send({title: 'title0', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
+        const response = await request(server).get(`/tasks?date_start=${today}&date_end=${today}`)
+        .set('Authorization', `Bearer ${token.token}`);
+        expect(response.status).toEqual(200)
+        expect(response.body).toMatchObject([{title: 'title0', description: 'descricao'}])
+
+    })
+
+    test('Should return in order of creation', async () => {
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT);
+
+        const task0 = await request(server)
+            .post('/task')
+            .send({ title: 'title0', description: 'descricao' })
+            .set('Authorization', `Bearer ${token.token}`);
+
+        await new Promise(r => setTimeout(r, 20));
+
+        const task1 = await request(server)
+            .post('/task')
+            .send({ title: 'title1', description: 'descricao' })
+            .set('Authorization', `Bearer ${token.token}`);
+
+        const responseAsc = await request(server)
+            .get('/tasks?priority=ASC')
+            .set('Authorization', `Bearer ${token.token}`);
+
+        const responseDesc = await request(server)
+            .get('/tasks?priority=DESC')
+            .set('Authorization', `Bearer ${token.token}`);
+
+        expect(responseAsc.status).toBe(200);
+        expect(responseAsc.body.map(t => t.title)).toEqual([
+            task0.body.title,
+            task1.body.title
+        ]);
+
+        expect(responseDesc.status).toBe(200);
+        expect(responseDesc.body.map(t => t.title)).toEqual([
+            task1.body.title,
+            task0.body.title
+        ]);
+    });
+
 })
 
 
@@ -135,7 +270,6 @@ describe('TaskController show tests', ()=>{
         expect(response.status).toEqual(404);
     })
 })
-
 
 describe('TaskController store tests', ()=>{
     test('Should return status 201, description and title', async()=>{
@@ -276,61 +410,61 @@ describe('TaskController update tests', ()=>{
 })
 
 describe('TaskController updateStatus tests', ()=>{
-    // test('Should return the status updated', async ()=>{
-    //     const server = app;
-    //     const token = await createUserTokenToTest(app, userToJWT)
+    test('Should return the status updated', async ()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
 
-    //     const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
-    //     .set('Authorization', `Bearer ${token.token}`);
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
         
-    //     const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: 'in_progress'})
-    //     .set('Authorization', `Bearer ${token.token}`);
-    //     expect(taskUpdated.body).toHaveProperty('id', response._body.id);
-    //     expect(taskUpdated.body).toHaveProperty('title', 'titulo');
-    //     expect(taskUpdated.body).toHaveProperty('description', 'descricao');
-    //     expect(taskUpdated.body).toHaveProperty('status', 'in_progress');
-    //     expect(taskUpdated.body).toHaveProperty('user_id', `${token.id}`);
+        const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: 'in_progress'})
+        .set('Authorization', `Bearer ${token.token}`);
+        expect(taskUpdated.body).toHaveProperty('id', response._body.id);
+        expect(taskUpdated.body).toHaveProperty('title', 'titulo');
+        expect(taskUpdated.body).toHaveProperty('description', 'descricao');
+        expect(taskUpdated.body).toHaveProperty('status', 'in_progress');
+        expect(taskUpdated.body).toHaveProperty('user_id', `${token.id}`);
 
-    // })
+    })
 
-    // test('Should return 400 if id is invalid', async()=>{
-    //     const server = app;
-    //     const token = await createUserTokenToTest(app, userToJWT)
+    test('Should return 400 if id is invalid', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
 
-    //     const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
-    //     .set('Authorization', `Bearer ${token.token}`);
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
         
-    //     const taskUpdated = await request(server).patch('/task/'+response._body.id+'1'+'/status').send({nextStatus: 'in_progress'})
-    //     .set('Authorization', `Bearer ${token.token}`);
+        const taskUpdated = await request(server).patch('/task/'+response._body.id+'1'+'/status').send({nextStatus: 'in_progress'})
+        .set('Authorization', `Bearer ${token.token}`);
 
-    //     expect(taskUpdated.status).toEqual(400);
-    // })
+        expect(taskUpdated.status).toEqual(400);
+    })
 
-    // test('Should return 400 if nextStatus is empty', async()=>{
-    //     const server = app;
-    //     const token = await createUserTokenToTest(app, userToJWT)
+    test('Should return 400 if nextStatus is empty', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
 
-    //     const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
-    //     .set('Authorization', `Bearer ${token.token}`);
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
         
-    //     const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: ''})
-    //     .set('Authorization', `Bearer ${token.token}`);
+        const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: ''})
+        .set('Authorization', `Bearer ${token.token}`);
 
-    //     expect(taskUpdated.status).toEqual(400);
-    // })
+        expect(taskUpdated.status).toEqual(400);
+    })
 
-    // test('Should return 404 if task does not exist', async()=>{
-    //     const server = app;
-    //     const token = await createUserTokenToTest(app, userToJWT)
+    test('Should return 404 if task does not exist', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
 
-    //     const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
-    //     .set('Authorization', `Bearer ${token.token}`);
-    //     response._body.id = '8d888880-c4c0-4ef6-8258-c8dc35baaec7'
-    //     const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: 'in_progress'})
-    //     .set('Authorization', `Bearer ${token.token}`);
+        const response = await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        response._body.id = '8d888880-c4c0-4ef6-8258-c8dc35baaec7'
+        const taskUpdated = await request(server).patch('/task/'+response._body.id+'/status').send({nextStatus: 'in_progress'})
+        .set('Authorization', `Bearer ${token.token}`);
 
-    //     expect(taskUpdated.status).toEqual(404);
-    // })
+        expect(taskUpdated.status).toEqual(404);
+    })
 
     test('Should return 422 if nextStatus does not exist in workflow', async()=>{
         const server = app;

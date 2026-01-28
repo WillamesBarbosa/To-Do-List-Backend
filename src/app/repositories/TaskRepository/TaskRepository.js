@@ -1,10 +1,38 @@
+require('dotenv').config();
 const database = require("../../../database/config/config-knex");
 
 class TaskRepository{
-    async findAll(userId){
-        const rows = await database('tasks').select('*').where('user_id', userId);
+    async findAll(userId, filters){
+        const query = database('tasks').where('user_id', userId);
+        
+        if(filters.search){
+            if(process.env.NODE_ENV === 'test'){
+                const searchLower = `%${filters.search.toLowerCase()}%`;
+                query.whereRaw('LOWER(title) LIKE ?', [searchLower]);
+            }else{
+                query.where('title', 'ilike', `%${filters.search}%`)
+            }
 
-        return rows;
+        }
+
+
+        if(filters.status && filters.status.length > 0){
+            query.whereIn('status', filters.status);
+        }
+        //filtro só deve funcionar se as duas datas forem definidas.
+        if(filters.date_start && filters.date_end){
+            console.log(filters.date_start, filters.date_end)
+            query.whereBetween('created_at', [filters.date_start, filters.date_end]);
+        }
+
+        if(filters.priority){
+            query.orderBy([
+                {column: 'created_at', order: filters.priority},
+                {column: 'id', order: filters.priority}
+            ]);
+        }
+
+        return await query;
     }
 
     async findById(id, userId){
@@ -13,6 +41,28 @@ class TaskRepository{
 
         return row || null;
     }
+
+    // async findWithFilters(userId, filters = {}){
+    //     const query = database('tasks').where('user_id', userId);
+
+    //     if(filters.search){
+    //         query.where('title', 'ilike', `%${filters.search}%`);
+    //     }
+
+    //     if(filters.status && filters.status.length > 0){
+    //         query.whereIn('status', filters.status);
+    //     }
+    //     //filtro só deve funcionar se as duas datas forem definidas.
+    //     if(filters.date_start && filters.date_end){
+    //         query.whereBetween('created_at', [filters.date_start, filters.date_end]);
+    //     }
+
+    //     if(filters.priority){
+    //         query.orderBy('created_at', filters.priority);
+    //     }
+
+    //     return query
+    // }
 
     async create(id, title, description, userId){
         const data = {

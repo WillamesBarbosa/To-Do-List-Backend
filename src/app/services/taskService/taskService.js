@@ -1,14 +1,69 @@
-const { canTransition, TASK_STATUS_WORKFLOW } = require("../../domain/Task/taskStatus");
+const { canTransition, TASK_STATUS_WORKFLOW, TASK_STATUS } = require("../../domain/Task/taskStatus");
 const TaskRepository = require("../../repositories/TaskRepository/TaskRepository");
 const ErrorsHTTP = require("../../utils/helpers/ErrorsHTTP");
 const generateUUID = require("../../utils/helpers/generateUUID");
 const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
+const isValidDate = require("../../utils/validators/isValidDate/isValidDate");
 const isValidUUID = require("../../utils/validators/isValidUUid/isValidUUID");
 const verifyParams = require("../../utils/validators/verifyParams/verifyParams");
 
 async function findAll(request){
         const userId = request.id;
-        const task = await TaskRepository.findAll(userId);
+        const  {
+                search, 
+                status, 
+                priority, 
+                date_start, 
+                date_end
+        } = request.query;
+
+        const statusToFilter = status ? status.split(',').map(s=> s.trim()) : [];
+        const invalidStatus = statusToFilter.filter(s => !Object.values(TASK_STATUS).includes(s))
+
+        const dateStart_IsValid = date_start ? isValidDate(date_start) : { isValid: false };
+        const dateEnd_IsValid = date_end ? isValidDate(date_end) : {isValid: false };
+
+        if(priority && !['ASC', 'DESC'].includes(priority.trim().toUpperCase())){
+                throw new ErrorsHTTP(
+                        '{ error: The priority must contain only one of the two parameters, "ASC" or "DESC".}', 
+                        responsesHTTP.BAD_REQUEST.status
+                ) 
+        }
+
+        if(status && invalidStatus.length > 0){
+                throw new ErrorsHTTP(
+                        `{ error: Status allowed are ${Object.values(TASK_STATUS)} }`,
+                         responsesHTTP.BAD_REQUEST.status
+                )
+        }
+
+        if(date_start && !dateStart_IsValid.isValid) {
+                throw new ErrorsHTTP(
+                        '{ error: Date is invalid. Correct format YYYY-MM-DD }',
+                        responsesHTTP.BAD_REQUEST.status
+                );
+        }
+
+        if(date_end && !dateEnd_IsValid.isValid) {
+                throw new ErrorsHTTP(
+                        '{ error: Date is invalid. Correct format YYYY-MM-DD }',
+                        responsesHTTP.BAD_REQUEST.status
+                );
+        }
+        
+        const filters = {
+                search: search ? search.trim() : null,
+                status: statusToFilter,
+                priority: priority && ['ASC', 'DESC'].includes(priority.trim().toUpperCase())
+                ? priority.trim().toUpperCase()
+                : null,
+
+                date_start: dateStart_IsValid.isValid ? `${dateStart_IsValid.date} 00:00:00`  : null,
+                date_end: dateEnd_IsValid.isValid ? `${dateEnd_IsValid.date} 23:59:59` : null
+        }
+
+        const task = await TaskRepository.findAll(userId, filters);
+        
         if(task.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT.message, responsesHTTP.NO_CONTENT.status);
 
         return task
@@ -92,7 +147,6 @@ async function updateStatusTask(request){
         }
 
         return allowedResponse;
-
 }
 
 async function deleteTask(request){
@@ -109,4 +163,10 @@ async function deleteTask(request){
         await TaskRepository.delete(id)
 }
 
-module.exports = { findAll, getTask, create, update, updateStatusTask, deleteTask};
+module.exports = { 
+        findAll, 
+        getTask, 
+        create, 
+        update, 
+        updateStatusTask, 
+        deleteTask};

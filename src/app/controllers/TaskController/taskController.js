@@ -16,7 +16,7 @@ class TaskController{
         return response.status(responsesHTTP.SUCCESS.status).json(task);
  
     }
-
+    
     async store(request, response){
         const task = await taskService.create(request)
 

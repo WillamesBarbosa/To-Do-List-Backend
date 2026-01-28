@@ -2,11 +2,13 @@ jest.mock('../../../../src/app/utils/validators/isValidUUid/isValidUUID', ()=> j
 jest.mock('../../../../src/app/utils/validators/verifyParams/verifyParams', ()=> jest.fn())
 jest.mock('../../../../src/app/utils/helpers/generateUUID', ()=> jest.fn())
 // jest.mock('../../../../src/app/domain/Task/taskStatus', ()=> jest.fn())
+jest.mock('../../../../src/app/utils/validators/isValidDate/isValidDate', ()=> jest.fn())
 
 const isValidUUID = require('../../../../src/app/utils/validators/isValidUUid/isValidUUID');
 const verifyParams = require('../../../../src/app/utils/validators/verifyParams/verifyParams');
 const generateUUID = require('../../../../src/app/utils/helpers/generateUUID');
 const taskStatus = require('../../../../src/app/domain/Task/taskStatus');
+const isValidDate = require('../../../../src/app/utils/validators/isValidDate/isValidDate');
 
 const TaskRepository = require('../../../../src/app/repositories/TaskRepository/TaskRepository')
 const taskService = require('../../../../src/app/services/taskService/taskService');
@@ -17,7 +19,7 @@ describe('Test findAll', ()=>{
         async()=>{
         TaskRepository.findAll = jest.fn().mockResolvedValue([]);
 
-        await expect(taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000'})).rejects.toMatchObject({
+        await expect(taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000', query: {}})).rejects.toMatchObject({
             message: responsesHTTP.NO_CONTENT.message,
             statusCode: responsesHTTP.NO_CONTENT.status
         })
@@ -29,12 +31,85 @@ describe('Test findAll', ()=>{
             {title: 'title2', description: 'description'}
         ])
 
-        const response = await taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000'});
+        const response = await taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000', query:{}});
 
         expect(response).toEqual([            
             {title: 'title1', description: 'description'}, 
             {title: 'title2', description: 'description'}
         ])
+    })
+
+    test('It should return 400 if priority contains something other than ASC or DESC.', async()=>{
+        await expect(taskService.findAll({ id: '123e4567-e89b-42d3-a456-426614174000', query: { priority: 'banana' } })).rejects.toMatchObject(
+            {
+                message: '{ error: The priority must contain only one of the two parameters, "ASC" or "DESC".}',
+                statusCode: responsesHTTP.BAD_REQUEST.status
+            }
+        )
+    })
+
+    test('It should return 400 if the status is not within the accepted workflow.', async()=>{
+        await expect(taskService.findAll({ id: '123e4567-e89b-42d3-a456-426614174000', query: { status: 'banana' } })).rejects.toMatchObject(
+            {
+                message: `{ error: Status allowed are ${Object.values(taskStatus.TASK_STATUS)} }`,
+                statusCode: responsesHTTP.BAD_REQUEST.status
+            }
+        )
+    })
+
+    test('It should return 400 if the status is not within the accepted workflow.', async()=>{
+        isValidDate.mockReturnValue({isValid: false})
+
+        await expect(taskService.findAll({ 
+            id: '123e4567-e89b-42d3-a456-426614174000', 
+            query: { date_start: 'banana' } 
+        })).rejects.toMatchObject(
+            {
+                message: '{ error: Date is invalid. Correct format YYYY-MM-DD }',
+                statusCode: responsesHTTP.BAD_REQUEST.status
+            }
+        )
+
+    
+        await expect(taskService.findAll({ 
+            id: '123e4567-e89b-42d3-a456-426614174000', 
+            query: { date_end: 'banana' } 
+        })).rejects.toMatchObject(
+            {
+                message: '{ error: Date is invalid. Correct format YYYY-MM-DD }',
+                statusCode: responsesHTTP.BAD_REQUEST.status
+            }
+        )
+
+        await expect(taskService.findAll({ 
+            id: '123e4567-e89b-42d3-a456-426614174000', 
+            query: { date_end: '23-02-2025' } 
+        })).rejects.toMatchObject(
+            {
+                message: '{ error: Date is invalid. Correct format YYYY-MM-DD }',
+                statusCode: responsesHTTP.BAD_REQUEST.status
+            }
+        )
+    })
+
+    test('Should verify if TaskRepository.findAll are called correct', async()=>{
+        jest.spyOn(TaskRepository, 'findAll').mockResolvedValue([{id: 'fake'}]);
+
+        await taskService.findAll({            
+            id: '123e4567-e89b-42d3-a456-426614174000', 
+            query: { search: '', status: '', priority: '', date_start: '', date_end: '' } 
+        })
+
+        expect(TaskRepository.findAll).toHaveBeenCalledWith(
+            '123e4567-e89b-42d3-a456-426614174000',
+            expect.objectContaining({ 
+                search: null,
+                status: [],
+                priority: null,
+                date_start: null,
+                date_end: null
+            })
+        )
     })
 })
 
