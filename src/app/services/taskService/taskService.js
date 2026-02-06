@@ -12,7 +12,7 @@ async function findAll(request){
         const  {
                 search, 
                 status, 
-                priority, 
+                order, 
                 date_start, 
                 date_end
         } = request.query;
@@ -23,7 +23,7 @@ async function findAll(request){
         const dateStart_IsValid = date_start ? isValidDate(date_start) : { isValid: false };
         const dateEnd_IsValid = date_end ? isValidDate(date_end) : {isValid: false };
 
-        if(priority && !['ASC', 'DESC'].includes(priority.trim().toUpperCase())){
+        if(order && !['ASC', 'DESC'].includes(order.trim().toUpperCase())){
                 throw new ErrorsHTTP(
                         '{ error: The priority must contain only one of the two parameters, "ASC" or "DESC".}', 
                         responsesHTTP.BAD_REQUEST.status
@@ -54,8 +54,8 @@ async function findAll(request){
         const filters = {
                 search: search ? search.trim() : null,
                 status: statusToFilter,
-                priority: priority && ['ASC', 'DESC'].includes(priority.trim().toUpperCase())
-                ? priority.trim().toUpperCase()
+                order: order && ['ASC', 'DESC'].includes(order.trim().toUpperCase())
+                ? order.trim().toUpperCase()
                 : null,
 
                 date_start: dateStart_IsValid.isValid ? `${dateStart_IsValid.date} 00:00:00`  : null,

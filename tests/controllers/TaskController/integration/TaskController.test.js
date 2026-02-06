@@ -198,13 +198,14 @@ describe('TaskController index tests', ()=>{
             .set('Authorization', `Bearer ${token.token}`);
 
         const responseAsc = await request(server)
-            .get('/tasks?priority=ASC')
+            .get('/tasks?order=ASC')
             .set('Authorization', `Bearer ${token.token}`);
 
         const responseDesc = await request(server)
-            .get('/tasks?priority=DESC')
+            .get('/tasks?order=DESC')
             .set('Authorization', `Bearer ${token.token}`);
 
+        console.log(responseDesc.error)
         expect(responseAsc.status).toBe(200);
         expect(responseAsc.body.map(t => t.title)).toEqual([
             task0.body.title,

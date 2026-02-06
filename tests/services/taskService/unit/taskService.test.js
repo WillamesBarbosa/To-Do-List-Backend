@@ -40,7 +40,7 @@ describe('Test findAll', ()=>{
     })
 
     test('It should return 400 if priority contains something other than ASC or DESC.', async()=>{
-        await expect(taskService.findAll({ id: '123e4567-e89b-42d3-a456-426614174000', query: { priority: 'banana' } })).rejects.toMatchObject(
+        await expect(taskService.findAll({ id: '123e4567-e89b-42d3-a456-426614174000', query: { order: 'banana' } })).rejects.toMatchObject(
             {
                 message: '{ error: The priority must contain only one of the two parameters, "ASC" or "DESC".}',
                 statusCode: responsesHTTP.BAD_REQUEST.status
@@ -105,7 +105,7 @@ describe('Test findAll', ()=>{
             expect.objectContaining({ 
                 search: null,
                 status: [],
-                priority: null,
+                order: null,
                 date_start: null,
                 date_end: null
             })

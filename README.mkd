@@ -14,6 +14,8 @@ Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backen
   - `not_started`
   - `in_progress`
   - `done`
+- Filtragem dinâmica de tasks
+  - Por **ordem**, **status** e **datas** 
 - Relação **1:N** entre Usuário e Tasks
 - Controle de acesso:
   - Usuário só pode **listar, visualizar, atualizar e deletar** suas próprias tasks
@@ -119,6 +121,69 @@ Rotas protegidas exigem token válido.
 
 ---
 
+## 🔍 Filtros de Tasks
+
+A rota GET /tasks aceita parâmetros opcionais de query string para filtragem dinâmica das tarefas do usuário autenticado.
+
+| Parâmetro  | Tipo           | Descrição                                   | Exemplo                             |
+|------------|----------------|---------------------------------------------|-------------------------------------|
+| search     | string         | Busca textual no título e descrição da task | "mercado"                           |
+| status     | array[string] | Filtra por um ou mais status                 | ["not_started","in_progress","done"] |
+| order      | string         | Filtra pela ordem                           | "ASC", "DESC"                       |
+| date_start | date           | Data inicial de criação                     | 2026-01-01                          |
+| date_end   | date           | Data final de criação                       | 2026-01-31                          |
+
+## 📌 Exemplo de requisição:
+
+```bash
+GET /tasks?search=estudo&status=not_started,in_progress,done&order=ASC&date_start=2025-01-01&date_end=2025-01-31
+```
+
+## 🧠 Comportamento dos filtros
+
+- Todos os filtros são opcionais
+- Podem ser combinados livremente
+- Quando não informados, não afetam o resultado
+- A busca (`search`) realiza matching parcial em campos de texto
+- O filtro `status` aceita múltiplos valores separados por vírgula
+- Datas são aplicadas sobre o campo de criação da task (`created_at`)
+- Sempre retorna apenas tasks pertencentes ao usuário autenticado
+
+## 📤 Respostas
+200 OK
+Retorna lista de tasks filtradas.
+```bash
+[
+  {
+    "id": "85f17b3f-3af9-401c-b93d-0d63c614f3dd",
+    "title": "example",
+    "description": "example",
+    "created_at": "2026-01-12T22:30:19.054Z",
+    "updated_at": null,
+    "user_id": "bae76671-1abd-46ae-9e77-bce11fff7957",
+    "status": "in_progress"
+  }
+]
+```
+
+204 No Content
+- Quando nenhum resultado é encontrado após aplicar os filtros.
+
+400 Bad request
+- Quando o status inválido
+- Quando o order é invalido
+- Quando o date_start/date_end é inválido
+
+401 Unauthorized  
+- Token ausente ou inválido.
+
+## 🧩 Design Decisions
+
+- 404 é retornado quando uma task não pertence ao usuário para evitar enumeração de recursos.
+- SQLite é usado apenas em testes para isolamento completo do banco principal.
+- Filtros são tratados na camada Service, mantendo o Repository desacoplado de regras de negócio.
+- Validação acontece antes da construção da query para evitar queries inválidas.
+
 ## 🧪 Testes
 
 O projeto possui testes **unitários e de integração**, cobrindo:
@@ -127,7 +192,7 @@ O projeto possui testes **unitários e de integração**, cobrindo:
 - Controllers
 - Validações
 - Regras de autorização
-- Fluxos de erro
+- Fluxo completo
 
 ### Rodar os testes:
 ```bash
@@ -215,12 +280,8 @@ Servidor disponível em:
 http://localhost:3000
 ```
 
-## 📈 Próximos Passos (Roadmap)
-
-Paginação de tasks
-
-- Status de progresso da task
-- Filtros por status
+## 📈 Roadmap
+- Paginação de tasks
 - Refresh token
 - Soft delete
 - Logs estruturados

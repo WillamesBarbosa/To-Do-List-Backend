@@ -3,6 +3,7 @@ const database = require("../../../database/config/config-knex");
 
 class TaskRepository{
     async findAll(userId, filters){
+        console.log('ta quebrando aqui')
         const query = database('tasks').where('user_id', userId);
         
         if(filters.search){
@@ -15,7 +16,6 @@ class TaskRepository{
 
         }
 
-
         if(filters.status && filters.status.length > 0){
             query.whereIn('status', filters.status);
         }
@@ -25,10 +25,11 @@ class TaskRepository{
             query.whereBetween('created_at', [filters.date_start, filters.date_end]);
         }
 
-        if(filters.priority){
+        if(filters.order){
+            console.log('ta quebrando aqui na query', filters.order)
             query.orderBy([
-                {column: 'created_at', order: filters.priority},
-                {column: 'id', order: filters.priority}
+                {column: 'created_at', order: filters.order},
+                {column: 'id', order: filters.order}
             ]);
         }
 
