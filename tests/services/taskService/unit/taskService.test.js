@@ -14,10 +14,15 @@ const TaskRepository = require('../../../../src/app/repositories/TaskRepository/
 const taskService = require('../../../../src/app/services/taskService/taskService');
 const responsesHTTP = require('../../../../src/app/utils/helpers/responsesHTTPS');
 
+beforeEach(()=>{
+    jest.clearAllMocks()
+})
+
+
 describe('Test findAll', ()=>{
     test('It should return 204 if the user has no tasks created or if there are no tasks with a user_id matching the authenticated user.',
         async()=>{
-        TaskRepository.findAll = jest.fn().mockResolvedValue([]);
+        TaskRepository.findAll = jest.fn().mockResolvedValue({tasks: [], pagination:{}});
 
         await expect(taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000', query: {}})).rejects.toMatchObject({
             message: responsesHTTP.NO_CONTENT.message,
@@ -26,17 +31,17 @@ describe('Test findAll', ()=>{
     })
 
     test('Should return 200', async()=>{
-        TaskRepository.findAll = jest.fn().mockResolvedValue([
+        TaskRepository.findAll = jest.fn().mockResolvedValue({tasks: [
             {title: 'title1', description: 'description'}, 
             {title: 'title2', description: 'description'}
-        ])
+        ], pagination:{}})
 
         const response = await taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000', query:{}});
 
-        expect(response).toEqual([            
+        expect(response).toEqual({tasks: [
             {title: 'title1', description: 'description'}, 
             {title: 'title2', description: 'description'}
-        ])
+        ], pagination:{}})
     })
 
     test('It should return 400 if priority contains something other than ASC or DESC.', async()=>{
@@ -57,7 +62,7 @@ describe('Test findAll', ()=>{
         )
     })
 
-    test('It should return 400 if the status is not within the accepted workflow.', async()=>{
+    test('Should return 400 if date_start or date_end is invalid', async()=>{
         isValidDate.mockReturnValue({isValid: false})
 
         await expect(taskService.findAll({ 
@@ -93,11 +98,11 @@ describe('Test findAll', ()=>{
     })
 
     test('Should verify if TaskRepository.findAll are called correct', async()=>{
-        jest.spyOn(TaskRepository, 'findAll').mockResolvedValue([{id: 'fake'}]);
+        jest.spyOn(TaskRepository, 'findAll').mockResolvedValue({tasks: [{id: 'fake'}], pagination:{}});
 
         await taskService.findAll({            
             id: '123e4567-e89b-42d3-a456-426614174000', 
-            query: { search: '', status: '', priority: '', date_start: '', date_end: '' } 
+            query: { search: '', status: '', priority: '', date_start: '', date_end: '', order: '' } 
         })
 
         expect(TaskRepository.findAll).toHaveBeenCalledWith(
@@ -108,7 +113,65 @@ describe('Test findAll', ()=>{
                 order: null,
                 date_start: null,
                 date_end: null
-            })
+            }),
+            expect.objectContaining({limit: 10, page: 1})
+        )
+    })
+
+    test('It should be verified whether TaskRepository.findAll is being called correctly even if order is passed in lowercase.', 
+            async()=>{
+        jest.spyOn(TaskRepository, 'findAll').mockResolvedValue({tasks: [{id: 'fake'}], pagination:{}});
+
+        await taskService.findAll({            
+            id: '123e4567-e89b-42d3-a456-426614174000', 
+            query: { search: '', status: '', priority: '', date_start: '', date_end: '', order: 'asc' } 
+        })
+
+        expect(TaskRepository.findAll).toHaveBeenCalledWith(
+            '123e4567-e89b-42d3-a456-426614174000',
+            expect.objectContaining({ 
+                search: null,
+                status: [],
+                order: 'ASC',
+                date_start: null,
+                date_end: null
+            }),
+            expect.objectContaining({limit: 10, page: 1})
+        )
+    })
+
+    test('Should return 400 and type of limit and page must be a number', async()=>{
+        await expect(taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000', query: {limit: 'abc'}}))
+        .rejects.toMatchObject({
+            message:'{ error: The limit must be of type number.}', 
+            statusCode: responsesHTTP.BAD_REQUEST.status
+        })
+
+        await expect(taskService.findAll({id: '123e4567-e89b-42d3-a456-426614174000', query: {page: 'abc'}}))
+        .rejects.toMatchObject({
+            message:'{ error: The page must be of type number.}', 
+            statusCode: responsesHTTP.BAD_REQUEST.status
+        })
+    })
+
+    test('Should send 100 as the maximum limit instead of letting the user exceed the limit.', async()=>{
+        jest.spyOn(TaskRepository, 'findAll').mockResolvedValue({tasks: [{id: 'fake'}], pagination:{}});
+
+        await taskService.findAll({            
+            id: '123e4567-e89b-42d3-a456-426614174000', 
+            query: { search: '', status: '', priority: '', date_start: '', date_end: '', limit: 200 } 
+        })
+
+        expect(TaskRepository.findAll).toHaveBeenCalledWith(
+            '123e4567-e89b-42d3-a456-426614174000',
+            expect.objectContaining({ 
+                search: null,
+                status: [],
+                order: null,
+                date_start: null,
+                date_end: null
+            }),
+            expect.objectContaining({limit: 100, page: 1})
         )
     })
 })

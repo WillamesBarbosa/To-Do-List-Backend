@@ -47,51 +47,56 @@ const userToJWT2 ={
 }
 
 describe('TaskController index tests', ()=>{
-    // test('Should return 204 if bd equals 0', async()=>{
-    //     const server = app;
-    //     const token = await createUserTokenToTest(app, userToJWT);
+    test('Should return 204 if bd equals 0', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT);
 
-    //     const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
+        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
 
     
-    //     expect(response.status).toEqual(204)
-    // })
+        expect(response.status).toEqual(204)
+    })
 
-    // test('Should return 204 not found if userId are different request.id', async()=>{
-    //     const server = app;
-    //     const user1 = await createUserTokenToTest(app, userToJWT);
-    //     const user2 = await createUserTokenToTest(app, userToJWT2);
-    //     await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
-    //     .set('Authorization', `Bearer ${user1.token}`);
+    test('Should return 204 not found if userId are different request.id', async()=>{
+        const server = app;
+        const user1 = await createUserTokenToTest(app, userToJWT);
+        const user2 = await createUserTokenToTest(app, userToJWT2);
+        await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${user1.token}`);
 
-    //     const response = await request(server).get('/tasks').set('Authorization', `Bearer ${user2.token}`);
+        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${user2.token}`);
         
-    //     expect(response.status).toEqual(204)
-    // })
+        expect(response.status).toEqual(204)
+    })
 
-    // test('Should return 201 and a series of tasks', async()=>{
-    //     const server = app;
-    //     const token = await createUserTokenToTest(app, userToJWT)
+    test('Should return 200 and a series of tasks', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT)
 
-    //     await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
-    //     .set('Authorization', `Bearer ${token.token}`);
+        await request(server).post('/task').send({title: 'titulo', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
 
-    //     const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
+        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
 
 
-    //     const [ { id } ] = response.body;
-    //     expect(response.status).toEqual(200)
-    //     expect(response.body).toMatchObject([
-    //         {
-    //             id: id, 
-    //             title: 'titulo', 
-    //             description: 'descricao', 
-    //             user_id: `${token.id}`, 
-    //             status: 'not_started'
-    //         }
-    //     ]);
+        const [ { id } ] = response.body.tasks;
+        expect(response.status).toEqual(200)
+        expect(response.body).toMatchObject({
+            pagination:{
+                page: 1,
+                limit: 10
+            },
+            tasks:[
+            {
+                id: id, 
+                title: 'titulo', 
+                description: 'descricao', 
+                user_id: `${token.id}`, 
+                status: 'not_started'
+            }
+        ]});
 
-    // })
+    })
 
     test('Should only return tasks with similar titles.', async()=>{
         const server = app;
@@ -104,14 +109,18 @@ describe('TaskController index tests', ()=>{
 
         const response = await request(server).get('/tasks?search=titl').set('Authorization', `Bearer ${token.token}`);
         expect(response.status).toEqual(200)
-        expect(response.body).toMatchObject([
-            {
+        expect(response.body).toMatchObject({
+            pagination: {
+                page: 1,
+                limit: 10
+            },
+            tasks: [{
                 title: 'title', 
                 description: 'descricao', 
                 user_id: `${token.id}`, 
                 status: 'not_started'
-            }
-        ]);
+            }]
+    });
     })
 
     test('Should return 204 if any task corresponding', async()=>{
@@ -124,7 +133,6 @@ describe('TaskController index tests', ()=>{
         .set('Authorization', `Bearer ${token.token}`);
 
         const response = await request(server).get('/tasks?search=west').set('Authorization', `Bearer ${token.token}`);
-        console.log(response.body)
         expect(response.status).toEqual(204)
     })
 
@@ -143,14 +151,21 @@ describe('TaskController index tests', ()=>{
 
         const response = await request(server).get('/tasks?status=in_progress').set('Authorization', `Bearer ${token.token}`);
         expect(response.status).toEqual(200)
-        expect(response.body).toMatchObject([
+        expect(response.body).toMatchObject(
             {
-                title: 'titulo', 
-                description: 'descricao', 
-                user_id: `${token.id}`, 
-                status: 'in_progress'
+                pagination:{
+                    limit: 10,
+                    page: 1
+                },
+                tasks:[{
+                    description: 'descricao', 
+                    title: 'titulo', 
+                    user_id: `${token.id}`, 
+                    status: 'in_progress'
+
+            }]
             }
-        ]);
+        );
 
     })
 
@@ -177,7 +192,17 @@ describe('TaskController index tests', ()=>{
         const response = await request(server).get(`/tasks?date_start=${today}&date_end=${today}`)
         .set('Authorization', `Bearer ${token.token}`);
         expect(response.status).toEqual(200)
-        expect(response.body).toMatchObject([{title: 'title0', description: 'descricao'}])
+        expect(response.body).toMatchObject({
+            pagination: {
+                limit: 10, 
+                page: 1
+            }, tasks: [
+                {
+                    description: "descricao", 
+                    title: "title0", 
+                }
+                ]
+            })
 
     })
 
@@ -185,17 +210,19 @@ describe('TaskController index tests', ()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT);
 
-        const task0 = await request(server)
-            .post('/task')
-            .send({ title: 'title0', description: 'descricao' })
-            .set('Authorization', `Bearer ${token.token}`);
+        await database('tasks').insert({
+            title: 'title0',
+            description: 'description',
+            created_at: '2024-01-01 10:00:00',
+            user_id: token.id
+        })
 
-        await new Promise(r => setTimeout(r, 20));
-
-        const task1 = await request(server)
-            .post('/task')
-            .send({ title: 'title1', description: 'descricao' })
-            .set('Authorization', `Bearer ${token.token}`);
+        await database('tasks').insert({
+            title: 'title1',
+            description: 'description',
+            created_at: '2025-01-01 10:00:00',
+            user_id: token.id
+        })
 
         const responseAsc = await request(server)
             .get('/tasks?order=ASC')
@@ -205,19 +232,82 @@ describe('TaskController index tests', ()=>{
             .get('/tasks?order=DESC')
             .set('Authorization', `Bearer ${token.token}`);
 
-        console.log(responseDesc.error)
         expect(responseAsc.status).toBe(200);
-        expect(responseAsc.body.map(t => t.title)).toEqual([
-            task0.body.title,
-            task1.body.title
+        expect(responseAsc.body.tasks.map(t => t.title)).toEqual([
+           'title0', 'title1'
         ]);
 
         expect(responseDesc.status).toBe(200);
-        expect(responseDesc.body.map(t => t.title)).toEqual([
-            task1.body.title,
-            task0.body.title
+        expect(responseDesc.body.tasks.map(t => t.title)).toEqual([
+            'title1', 'title0'
         ]);
     });
+
+    test('Should return default pagination with page 1 and limit 10.', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT);
+
+        await request(server).post('/task').send({title: 'title0', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        await request(server).post('/task').send({title: 'title', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
+        const response = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
+
+        expect(response.body).toMatchObject({
+            pagination:{
+                page: 1,
+                limit: 10,
+                totalTasks: 2, 
+                totalPage: 1
+            },
+            tasks: [{title: 'title0'}, {title: 'title'}]
+        })
+    })
+
+    test('Should return pagination with the limit defined by the user.', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT);
+
+        await request(server).post('/task').send({title: 'title0', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        await request(server).post('/task').send({title: 'title', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
+        const response = await request(server).get('/tasks?limit=1').set('Authorization', `Bearer ${token.token}`);
+
+        expect(response.body).toMatchObject({
+            pagination:{
+                page: 1,
+                limit: 1,
+                totalTasks: 2, 
+                totalPage: 2
+            },
+            tasks: [{title: 'title0'}]
+        })  
+    })
+
+    test('should return the page specified by the user.', async()=>{
+        const server = app;
+        const token = await createUserTokenToTest(app, userToJWT);
+
+        await request(server).post('/task').send({title: 'title0', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+        await request(server).post('/task').send({title: 'title', description: 'descricao'})
+        .set('Authorization', `Bearer ${token.token}`);
+
+        const response = await request(server).get('/tasks?limit=1&page=2').set('Authorization', `Bearer ${token.token}`);
+
+        expect(response.body).toMatchObject({
+            pagination:{
+                page: 2,
+                limit: 1,
+                totalTasks: 2, 
+                totalPage: 2
+            },
+            tasks: [{title: 'title'}]
+        }) 
+    })
 
 })
 
@@ -231,7 +321,7 @@ describe('TaskController show tests', ()=>{
     })
 
 
-    test('Should return 201 because id exists', async()=>{
+    test('Should return 200 because id exists', async()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
 
@@ -467,7 +557,7 @@ describe('TaskController updateStatus tests', ()=>{
         expect(taskUpdated.status).toEqual(404);
     })
 
-    test('Should return 422 if nextStatus does not exist in workflow', async()=>{
+    test('Should return 400 if nextStatus does not exist in workflow', async()=>{
         const server = app;
         const token = await createUserTokenToTest(app, userToJWT)
 
@@ -499,7 +589,7 @@ describe('TaskController delete tests', ()=>{
 
         const checkIfTaskWasDeletedCorrectly = await request(server).get('/tasks').set('Authorization', `Bearer ${token.token}`);
 
-        expect(checkIfTaskWasDeletedCorrectly.body).toHaveLength(2);
+        expect(checkIfTaskWasDeletedCorrectly.body.tasks).toHaveLength(2);
     })
     
     test('should return status 200', async ()=>{

@@ -2,7 +2,8 @@
 
 API RESTful para gerenciamento de tarefas (To-Do List), com autenticação de usuários, controle de acesso por proprietário da tarefa e testes automatizados.
 
-Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backend**, **separação de responsabilidades**, **segurança** e **testabilidade**, servindo como um MVP funcional e escalável.
+## 🎯 Objetivo do Projeto
+Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backend**, **separação de responsabilidades**, **segurança**, **alta testabilidade**, **escalabilidade** e **previsibilidade de queries**, servindo como um MVP funcional e escalável.
 
 ---
 
@@ -121,22 +122,26 @@ Rotas protegidas exigem token válido.
 
 ---
 
-## 🔍 Filtros de Tasks
+## 📄 Paginação de Tasks
 
-A rota GET /tasks aceita parâmetros opcionais de query string para filtragem dinâmica das tarefas do usuário autenticado.
+A rota GET /tasks agora suporta paginação, permitindo navegação eficiente entre grandes volumes de dados.
+
+A paginação é aplicada após os filtros, garantindo consistência nos resultados.
 
 | Parâmetro  | Tipo           | Descrição                                   | Exemplo                             |
 |------------|----------------|---------------------------------------------|-------------------------------------|
 | search     | string         | Busca textual no título e descrição da task | "mercado"                           |
 | status     | array[string] | Filtra por um ou mais status                 | ["not_started","in_progress","done"] |
-| order      | string         | Filtra pela ordem                           | "ASC", "DESC"                       |
+| order      | string         | Ordena por data de criação                  | "ASC", "DESC"                       |
 | date_start | date           | Data inicial de criação                     | 2026-01-01                          |
 | date_end   | date           | Data final de criação                       | 2026-01-31                          |
+| page       | number         | Página atual (mínimo 1)                     | 1                         |
+| limit      | number         | Quantidade de itens por página              | 10                          |
 
 ## 📌 Exemplo de requisição:
 
 ```bash
-GET /tasks?search=estudo&status=not_started,in_progress,done&order=ASC&date_start=2025-01-01&date_end=2025-01-31
+GET /tasks?search=estudo&status=not_started,in_progress,done&order=ASC&date_start=2025-01-01&date_end=2025-01-31&page=1&limit=50
 ```
 
 ## 🧠 Comportamento dos filtros
@@ -149,25 +154,55 @@ GET /tasks?search=estudo&status=not_started,in_progress,done&order=ASC&date_star
 - Datas são aplicadas sobre o campo de criação da task (`created_at`)
 - Sempre retorna apenas tasks pertencentes ao usuário autenticado
 
+## 📌 Regras da Paginação
+
+- Page deve ser um inteiro positivo.
+- Limit deve ser um inteiro positivo.
+- O limite máximo por página é 100 registros.
+- Caso page ou limit não sejam informados:
+  - page = 1
+  - limit = 10
+- A paginação sempre respeita os filtros aplicados.
+- Apenas tasks do usuário autenticado são retornadas.
+
+## 🧠 Pipeline de consulta
+
+A construção da query segue a ordem:
+1. Aplicação dos filtros
+2. Definição da ordenação
+3. Aplicação da paginação
+
+Essa sequência garante consistência entre páginas e evita duplicações ou perda de registros
+
 ## 📤 Respostas
 200 OK
-Retorna lista de tasks filtradas.
+Retorna lista de tasks filtradas e paginadas
 ```bash
-[
-  {
-    "id": "85f17b3f-3af9-401c-b93d-0d63c614f3dd",
-    "title": "example",
-    "description": "example",
-    "created_at": "2026-01-12T22:30:19.054Z",
-    "updated_at": null,
-    "user_id": "bae76671-1abd-46ae-9e77-bce11fff7957",
-    "status": "in_progress"
+{
+  "tasks": [
+    {
+      "id": "85f17b3f-3af9-401c-b93d-0d63c614f3dd",
+      "title": "example",
+      "description": "example",
+      "created_at": "2026-01-12T22:30:19.054Z",
+      "updated_at": null,
+      "user_id": "bae76671-1abd-46ae-9e77-bce11fff7957",
+      "status": "in_progress"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 35,
+    "totalPages": 4
   }
-]
+}
 ```
 
 204 No Content
 - Quando nenhum resultado é encontrado após aplicar os filtros.
+
+### Filtros
 
 400 Bad request
 - Quando o status inválido
@@ -177,13 +212,27 @@ Retorna lista de tasks filtradas.
 401 Unauthorized  
 - Token ausente ou inválido.
 
+### Paginação 
+
+A API retorna 400 quando:
+- `page` não é inteiro positivo
+- `limit` não é inteiro positivo
+- `limit` excede o limite máximo permitido (100)
+- Parametro de filtro inválido
+
 ## 🧩 Design Decisions
 
+### Filtros
 - 404 é retornado quando uma task não pertence ao usuário para evitar enumeração de recursos.
 - SQLite é usado apenas em testes para isolamento completo do banco principal.
 - Filtros são tratados na camada Service, mantendo o Repository desacoplado de regras de negócio.
 - Validação acontece antes da construção da query para evitar queries inválidas.
 
+### Paginação
+- A paginação foi implementada na camada Service, mantendo:
+- Repository responsável apenas pela consulta
+- Service responsável por regras de negócio e validação
+- Essa separação mantém baixo acoplamento e facilita testes isolados.
 ## 🧪 Testes
 
 O projeto possui testes **unitários e de integração**, cobrindo:
@@ -281,10 +330,10 @@ http://localhost:3000
 ```
 
 ## 📈 Roadmap
-- Paginação de tasks
 - Refresh token
 - Soft delete
 - Logs estruturados
+- Rate limiting
 
 
 ## 👨‍💻 Autor

@@ -14,14 +14,36 @@ async function findAll(request){
                 status, 
                 order, 
                 date_start, 
-                date_end
+                date_end,
+                page = 1,
+                limit = 10
         } = request.query;
+
+        const pageNumber = Number(page);
+        const limitNumber = Number(limit);
+
+        const MAX_LIMIT_PER_PAGE = 100;
 
         const statusToFilter = status ? status.split(',').map(s=> s.trim()) : [];
         const invalidStatus = statusToFilter.filter(s => !Object.values(TASK_STATUS).includes(s))
 
         const dateStart_IsValid = date_start ? isValidDate(date_start) : { isValid: false };
         const dateEnd_IsValid = date_end ? isValidDate(date_end) : {isValid: false };
+
+        if(!Number.isInteger(limitNumber) || limitNumber <= 0){
+                throw new ErrorsHTTP(
+                        '{ error: The limit must be of type number.}', 
+                        responsesHTTP.BAD_REQUEST.status
+                ) 
+        }
+        if(!Number.isInteger(pageNumber) || pageNumber <= 0 ){
+                throw new ErrorsHTTP(
+                        '{ error: The page must be of type number.}', 
+                        responsesHTTP.BAD_REQUEST.status
+                ) 
+        }
+
+        const limitPage = Math.min(limitNumber, MAX_LIMIT_PER_PAGE);
 
         if(order && !['ASC', 'DESC'].includes(order.trim().toUpperCase())){
                 throw new ErrorsHTTP(
@@ -62,9 +84,14 @@ async function findAll(request){
                 date_end: dateEnd_IsValid.isValid ? `${dateEnd_IsValid.date} 23:59:59` : null
         }
 
-        const task = await TaskRepository.findAll(userId, filters);
+        const pagination = {
+                page: pageNumber,
+                limit: limitPage
+        }
+
+        const task = await TaskRepository.findAll(userId, filters, pagination);
         
-        if(task.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT.message, responsesHTTP.NO_CONTENT.status);
+        if(task.tasks.length === 0) throw new ErrorsHTTP(responsesHTTP.NO_CONTENT.message, responsesHTTP.NO_CONTENT.status);
 
         return task
 }
