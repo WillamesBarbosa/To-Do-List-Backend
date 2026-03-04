@@ -4,6 +4,7 @@ const verifyParams = require('../../utils/validators/verifyParams/verifyParams')
 const isValidEmail = require("../../utils/validators/isValidEmail/isValidEmail");
 const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
 const ErrorsHTTP = require("../../utils/helpers/ErrorsHTTP");
+const logger = require("../../utils/helpers/logger/logger");
 
 async function loginService(request){
         const { email, password } = request.body;
@@ -14,11 +15,25 @@ async function loginService(request){
         if(!emailIsValid.isValid) throw new ErrorsHTTP(emailIsValid.message, responsesHTTP.BAD_REQUEST.status);
         
         const user = await findByEmail(email);
-        if(!user) throw new ErrorsHTTP({error: 'Email not found.'}, responsesHTTP.BAD_REQUEST.status);
+        
+        if(!user){
+                logger.warn({ email }, 'Tentativa de login com email não cadastrado');
+                
+                throw new ErrorsHTTP({error: 'Email not found.'}, responsesHTTP.BAD_REQUEST.status);
+        } 
+                
         
         const token = await generateToken(user, password);
-        if(!token) throw new ErrorsHTTP({error: 'Password incorrect.'}, responsesHTTP.BAD_REQUEST.status);
         
+        if(!token){
+                logger.warn({ email }, 'Tentativa de login com senha incorreta');
+                
+                throw new ErrorsHTTP({error: 'Password incorrect.'}, responsesHTTP.BAD_REQUEST.status);
+        } 
+        
+        request.log.info({ email, userId: user.id }, 'Login bem-sucedido 1');
+        logger.info({ email, userId: user.id }, 'Login bem-sucedido 2');
+
         return {isValid: true, token};
 
 }

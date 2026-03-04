@@ -260,6 +260,33 @@ Validam o comportamento do sistema completo, incluindo:
 
 Os testes utilizam SQLite em memória, garantindo isolamento total do banco de produção.
 
+## 📋 Logs
+
+O projeto utiliza **Pino** para logging estruturado, com integração automática ao Express via **pino-http**.
+
+### Comportamento por ambiente
+
+| Ambiente | Saída | Formato |
+|---|---|---|
+| development | Terminal | Pretty (legível) |
+| production | `logs/app.log` | JSON estruturado |
+
+### O que é logado
+
+| Evento | Nível |
+|---|---|
+| Toda requisição HTTP | `info` |
+| Login bem-sucedido | `info` |
+| Task criada, atualizada, deletada | `info` |
+| Usuário criado, atualizado, deletado | `info` |
+| Login com email não encontrado | `warn` |
+| Login com senha incorreta | `warn` |
+| Erros inesperados | `error` |
+| Exceções não capturadas | `fatal` |
+
+### Segurança
+O header `Authorization` é automaticamente removido dos logs antes de serem registrados.
+
 ## 🗄️ Banco de Dados
 ### Relacionamento
 ```bash
@@ -332,7 +359,6 @@ http://localhost:3000
 ## 📈 Roadmap
 - Refresh token
 - Soft delete
-- Logs estruturados
 - Rate limiting
 
 

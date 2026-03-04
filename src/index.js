@@ -3,9 +3,10 @@ const express = require('express');
 const fs = require('fs');
 const https = require('https');
 const cors = require('cors');
+const pinoHttp = require('pino-http');
 
 const routes = require('./routes/routes');
-const responsesHTTP = require('./app/utils/helpers/responsesHTTPS');
+const logger = require('./app/utils/helpers/logger/logger');
 
 const textInitialWhenConnect = `
 -----------------------------------------------
@@ -21,6 +22,7 @@ const textInitialWhenConnect = `
 const app = express();
 // For convert JSON on Js Object
 app.use(express.json());
+app.use(pinoHttp({ logger, redact: ['req.headers.authorization'] }));
 
 const ambient = process.env.NODE_ENV;
 
@@ -35,11 +37,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(routes);
 
-// Middleware so that errors can respond to the client in case of errors
-app.use((error, request, response, next) => {
-  response.status(responsesHTTP.INTERNAL_SERVER_ERROR.status).json(responsesHTTP.INTERNAL_SERVER_ERROR);
-});
-
 // For read ssl certified
 const options = {
   key: fs.readFileSync('ssl/code.key'),
@@ -48,6 +45,16 @@ const options = {
 
 // Function for create the HTTPS server
 const server = https.createServer(options, app);
+
+process.on('uncaughtException', (error) => {
+    logger.fatal({ err: error }, 'Exceção não capturada — sistema encerrando');
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+    logger.fatal({ reason }, 'Promise rejeitada não tratada — sistema encerrando');
+    process.exit(1);
+}); 
 
 // Calling the function to start the server.
 server.listen(PORT, () => console.log(textInitialWhenConnect));

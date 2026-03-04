@@ -1,3 +1,4 @@
+const logger = require("../../utils/helpers/logger/logger");
 const { canTransition, TASK_STATUS_WORKFLOW, TASK_STATUS } = require("../../domain/Task/taskStatus");
 const TaskRepository = require("../../repositories/TaskRepository/TaskRepository");
 const ErrorsHTTP = require("../../utils/helpers/ErrorsHTTP");
@@ -118,6 +119,9 @@ async function create(request){
         const id = generateUUID();
         
         const task = await TaskRepository.create(id, title, description, userId);
+
+        logger.info({ userId, taskId: id, title }, 'Created task');
+
         return task;
 }
 
@@ -137,6 +141,8 @@ async function update(request){
 
         const taskUpdated = await TaskRepository.update(id, title, description);
 
+        logger.info({ userId, taskId: id }, 'Updated task');
+        
         return taskUpdated
 }
 
@@ -168,6 +174,8 @@ async function updateStatusTask(request){
 
         const statusTaskUpdated = await TaskRepository.updateStatus(id, nextStatus);
 
+        logger.info({ userId, taskId: id, from: currentStatus, to: nextStatus }, 'Task status updated');
+
         const allowedResponse = {
                 ...statusTaskUpdated,
                 nextAllowedStatus: TASK_STATUS_WORKFLOW[nextStatus]
@@ -181,13 +189,15 @@ async function deleteTask(request){
         const { id } = request.params;
 
         const isIdvalid = isValidUUID(id);
-        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status)
+        if(!isIdvalid) throw new ErrorsHTTP(responsesHTTP.BAD_REQUEST.message, responsesHTTP.BAD_REQUEST.status);
 
         const taskForDelete = await TaskRepository.findById(id, userId);
 
-        if(!taskForDelete) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status)
+        if(!taskForDelete) throw new ErrorsHTTP(responsesHTTP.NOT_FOUND.message, responsesHTTP.NOT_FOUND.status);
 
-        await TaskRepository.delete(id)
+        await TaskRepository.delete(id);
+
+        logger.info({ userId, taskId: id }, 'Deleted task');
 }
 
 module.exports = { 

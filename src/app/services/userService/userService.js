@@ -5,7 +5,8 @@ const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
 const isValidEmail = require("../../utils/validators/isValidEmail/isValidEmail");
 const verifyParams = require("../../utils/validators/verifyParams/verifyParams");
 const hashPassword = require('../hashPassword/hashPassword')
-const updateAt = require('../../utils/helpers/updateAt/updateAt')
+const updateAt = require('../../utils/helpers/updateAt/updateAt');
+const logger = require("../../utils/helpers/logger/logger");
 
 async function findAll(){
         const users = await userRepository.findAll();
@@ -39,6 +40,8 @@ async function create(request){
         const hashedPasswordConst = await hashPassword(password)
         const user = await userRepository.create(id, name, email, hashedPasswordConst);
 
+        logger.info({ id, email }, 'Created user');
+
         return user
 }
 
@@ -53,6 +56,8 @@ async function update(request){
         const updatedAt = updateAt();
         const user = await userRepository.update(id, name, userFinded.email, updatedAt);
 
+        logger.info({ id, email: user.email, from: user.name, to: name }, 'Updated user');
+
         return user;
 }
 
@@ -60,6 +65,9 @@ async function deleteUser(request){
         const id = request.id;
         // Também não precisa de validacao, o middleware de autenticacao ja garente que o id existe
         await userRepository.delete(id)
+
+        logger.info({ id }, 'Deleted user');
+
 }
 
 module.exports = { findAll, getUser, create, update, deleteUser }

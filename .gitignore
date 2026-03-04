@@ -4,3 +4,4 @@ ssl/
 code.hash.js
 coverage/
 .env
+logs/
