@@ -31,8 +31,7 @@ async function loginService(request){
                 throw new ErrorsHTTP({error: 'Password incorrect.'}, responsesHTTP.BAD_REQUEST.status);
         } 
         
-        request.log.info({ email, userId: user.id }, 'Login bem-sucedido 1');
-        logger.info({ email, userId: user.id }, 'Login bem-sucedido 2');
+        logger.info({ email, userId: user.id }, 'Login bem-sucedido');
 
         return {isValid: true, token};
 
