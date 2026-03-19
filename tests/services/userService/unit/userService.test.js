@@ -1,13 +1,13 @@
 jest.mock('../../../../src/app/utils/validators/verifyParams/verifyParams', ()=> jest.fn());
 jest.mock('../../../../src/app/utils/validators/isValidEmail/isValidEmail', ()=> jest.fn());
 jest.mock('../../../../src/app/utils/helpers/generateUUID', ()=> jest.fn());
-jest.mock('../../../../src/app/services/hashPassword/hashPassword', ()=> jest.fn());
+jest.mock('../../../../src/app/utils/helpers/hashPassword/hashPassword', ()=> jest.fn());
 jest.mock('../../../../src/app/utils/helpers/updateAt/updateAt', ()=> jest.fn());
 
 const verifyParams = require('../../../../src/app/utils/validators/verifyParams/verifyParams')
 const isValidEmail = require('../../../../src/app/utils/validators/isValidEmail/isValidEmail');
 const generateUUID = require('../../../../src/app/utils/helpers/generateUUID');
-const hashPassword = require('../../../../src/app/services/hashPassword/hashPassword');
+const hashPassword = require('../../../../src/app/utils/helpers/hashPassword/hashPassword');
 const updateAt = require('../../../../src/app/utils/helpers/updateAt/updateAt');
 
 

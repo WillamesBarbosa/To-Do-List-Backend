@@ -4,7 +4,7 @@ const generateUUID = require("../../utils/helpers/generateUUID");
 const responsesHTTP = require("../../utils/helpers/responsesHTTPS");
 const isValidEmail = require("../../utils/validators/isValidEmail/isValidEmail");
 const verifyParams = require("../../utils/validators/verifyParams/verifyParams");
-const hashPassword = require('../hashPassword/hashPassword')
+const hashPassword = require('../../utils/helpers/hashPassword/hashPassword')
 const updateAt = require('../../utils/helpers/updateAt/updateAt');
 const logger = require("../../utils/helpers/logger/logger");
 

@@ -4,17 +4,24 @@ jest.mock(
     findByEmail: jest.fn()
   })
 );
+jest.mock('../../../../src/app/repositories/RefreshTokenRepository/RefreshTokenRepository', () => ({
+    deleteUser: jest.fn(),
+    save: jest.fn()
+}));
 
-jest.mock('../../../../src/app/utils/validators/isValidEmail/isValidEmail', ()=> jest.fn())
-jest.mock('../../../../src/app/services/generateToken/generateToken', ()=> jest.fn())
-jest.mock('../../../../src/app/utils/validators/verifyParams/verifyParams', ()=> jest.fn())
+jest.mock('../../../../src/app/utils/helpers/validatePassword/validatePassword', ()=> jest.fn());
+jest.mock('../../../../src/app/utils/validators/isValidEmail/isValidEmail', ()=> jest.fn());
+jest.mock('../../../../src/app/utils/helpers/generateToken/generateToken', ()=> jest.fn());
+jest.mock('../../../../src/app/utils/validators/verifyParams/verifyParams', ()=> jest.fn());
 
 
 const isValidEmail = require("../../../../src/app/utils/validators/isValidEmail/isValidEmail");
 const verifyParams = require("../../../../src/app/utils/validators/verifyParams/verifyParams");
 const { findByEmail } = require("../../../../src/app/repositories/UserRepository/userRepository");
-const generateToken = require("../../../../src/app/services/generateToken/generateToken");
 const loginService = require("../../../../src/app/services/loginService/loginService");
+const validatePassword = require("../../../../src/app/utils/helpers/validatePassword/validatePassword");
+const generateToken = require("../../../../src/app/utils/helpers/generateToken/generateToken");
+const RefreshTokenRepository = require('../../../../src/app/repositories/RefreshTokenRepository/RefreshTokenRepository');
 // const responsesHTTP = require("../../../../src/app/utils/helpers/responsesHTTPS");
 
 beforeEach(()=>{
@@ -72,9 +79,8 @@ describe('Test loginService', ()=>{
     test('Should return password incorrect', async()=>{
     findByEmail.mockResolvedValue(user);
     generateToken.mockResolvedValue(false);
-    findByEmail.mockResolvedValue({email :'email@email.com', password: '123456'})
-    generateToken.mockResolvedValue(false)
-
+    findByEmail.mockResolvedValue({email :'email@email.com', password: '123456'});
+    validatePassword.mockResolvedValue(false)
     
     await expect(loginService({body: {email :'email@email.com', password: '123'}})).rejects.toMatchObject({message: {error: 'Password incorrect.'}})
     await expect(loginService({body: {email :'email@email.com', password: '123'}})).rejects.toMatchObject({ statusCode: 400})
@@ -84,19 +90,26 @@ describe('Test loginService', ()=>{
     test('Should return 200 and token', async()=>{
         verifyParams.mockReturnValue({valid: true});
         isValidEmail.mockReturnValue({isValid: true});
-        findByEmail.mockResolvedValue(user)
-        generateToken.mockResolvedValue({
-            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjMiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTk5OTk5OTl9.mockSignature'    
-        })
+        findByEmail.mockResolvedValue(user);
+        validatePassword.mockResolvedValue(true);
+        RefreshTokenRepository.deleteUser.mockResolvedValue();
+        RefreshTokenRepository.save.mockResolvedValue();
+        generateToken        
+        .mockReturnValueOnce('fake-access-token')
+        .mockReturnValueOnce('fake-refresh-token');
 
         const result = await loginService({body: {email: 'email@email.com', password: '123'}})
         
         expect(result).toMatchObject({
             isValid: true,
-            token: {
-                token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjMiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTk5OTk5OTl9.mockSignature'
-                }
+            token: 'fake-access-token',
+            refreshToken: 'fake-refresh-token'
             });
+
+        expect(RefreshTokenRepository.save).toHaveBeenCalledWith(
+        user.id,
+        'fake-refresh-token'
+        ) ;  
 
     })
 })

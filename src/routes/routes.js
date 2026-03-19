@@ -9,10 +9,10 @@ const LoginController = require('../app/controllers/LoginController/loginControl
 const authenticationMiddleware = require('../middlewares/authenticationMiddleware/authenticationMiddleware');
 
 router.post('/login', resolver(LoginController.login))
+router.post('/refresh', resolver(LoginController.refresh))
 
 router.get('/users', resolver(UserController.index));
 router.post('/user', resolver(UserController.store));
-
 
 
 

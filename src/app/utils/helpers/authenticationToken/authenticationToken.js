@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
-async function authenticationService(token){
+function authenticationToken(token, secret, prefix){
     try {
         if(token === undefined || token === null) return { isValid: false, message: { error: 'Token not informed'}};
         
-        const pureToken = token.replace(/^Bearer\s+/i, '');
-        const decoded = jwt.verify(pureToken, process.env.TOKEN_SECRET);
+        const pureToken = token.replace(new RegExp(`^${prefix}\\s+`, 'i'), '');
+        const decoded = jwt.verify(pureToken, secret);
         
         return { isValid: true, decoded};
     } catch (error) {
@@ -21,4 +20,4 @@ async function authenticationService(token){
 
 }
 
-module.exports = authenticationService;
+module.exports = authenticationToken;

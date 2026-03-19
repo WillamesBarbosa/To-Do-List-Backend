@@ -2,6 +2,7 @@ const request = require('supertest');
 const app = require('../../../../src/index');
 const database = require('../../../../src/database/config/config-knex');
 const generateTable = require('../../../../src/app/utils/helpers/generateTable/generateTable');
+const createUserTokenToTest = require('../../../../src/app/utils/helpers/createUserTokenToTest/createUserTokenToTest');
 
 beforeAll(async () => {
     await generateTable('users');
@@ -16,7 +17,13 @@ beforeAll(async () => {
     return database.destroy();
   });
 
-describe('loginController tests', ()=>{
+  const userToJWT = {
+    name: 'name',
+    email: 'email@email.com',
+    password: '123456'
+}
+
+describe('loginController login tests', ()=>{
   test('should return 400 status and error message correct if email or password is undefined', async()=>{
       const server = app;
       await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' });
@@ -50,11 +57,11 @@ describe('loginController tests', ()=>{
       expect(login.body).toEqual({ error: 'Email not found.' });
   }) 
 
-    test('Should return 400 status and correct message if password is incorrect', async()=>{
+  test('Should return 400 status and correct message if password is incorrect', async()=>{
     const server = app;
     await request(server).post('/user').send({ name: 'name', email: 'email2@email.com', password: 'password' });
   
-    const login = await request(server).post('/login').send({ email: 'email2@email.com', password: 'passwordincorrect' });
+    const login = await request(server).post('/login').send({ email: 'email2@email.com', password: '123456' });
 
     expect(login.status).toEqual(400);
     expect(login.body).toEqual({ error: 'Password incorrect.' });
@@ -68,5 +75,40 @@ describe('loginController tests', ()=>{
 
       const login = await request(server).post('/login').send({ email: 'email2@email.com', password: 'password' })
       expect(login.status).toEqual(200);
+  })
+})
+
+describe('LoginController refresh tests', ()=>{
+  test('Should return status 200 and token access jwt and token refresh', async()=>{
+    const server =  app;
+    
+    const user = await createUserTokenToTest(app, userToJWT)    
+    const refresh = await request(server).post('/refresh').set('x_token_refresh', `Refresh ${user.refreshToken}`);
+    console.log('token 1',user)
+    console.log('token 2', refresh.body)
+    expect(refresh.status).toEqual(200)
+    expect(refresh.body.refreshToken).not.toEqual(user.refreshToken)
+  })
+
+  test('Should return 401 unauthorized if x_token_refresh are invalid', async()=>{
+    const server = app;
+
+    const refresh = await request(server)    
+    .post('/refresh')
+    .set('x_token_refresh', `Refresh eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNjZjVkMTk0LTIwMjMtNGNhYS1iYzc5LTM3ZmJlMTgxN2E4MCIsImp0aSI6IjU5NzliMWIyLWI2OWQtNDFhOC1iMmY2LTA3M2NiMzQzMzI4MCIsImlhdCI6MTc3Mzc0MjY4OCwiZXhwIjoxNzczNzQzNTg4fQ.qfloVFG_N8ZjVXLiCAvlQ4yQrraUlzeBg86v14P-wJ0`)
+    
+
+    expect(refresh.status).toEqual(401);
+  })
+
+    test('Should return 401 unauthorized if x_token_refresh are null', async()=>{
+    const server = app;
+
+    const refresh = await request(server)    
+    .post('/refresh')
+    .set('x_token_refresh', '')
+    
+
+    expect(refresh.status).toEqual(401);
   })
 })

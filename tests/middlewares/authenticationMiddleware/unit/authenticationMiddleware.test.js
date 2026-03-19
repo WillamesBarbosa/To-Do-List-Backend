@@ -1,7 +1,6 @@
-jest.mock("../../../../src/app/services/authenticationService/authenticationService");
+jest.mock("../../../../src/app/utils/helpers/authenticationToken/authenticationToken", ()=> jest.fn());
 
-
-const authenticationService = require("../../../../src/app/services/authenticationService/authenticationService");
+const authenticationToken = require("../../../../src/app/utils/helpers/authenticationToken/authenticationToken");
 const next = jest.fn();
 const ErrorsHTTP = require("../../../../src/app/utils/helpers/ErrorsHTTP");
 const responsesHTTP = require("../../../../src/app/utils/helpers/responsesHTTPS");
@@ -30,7 +29,7 @@ describe('Test authenticationMiddleware', ()=>{
 
     test('Should return BAD REQUEST and Token Invalid', async()=>{
         const msg = {error: 'Token invalid.'}
-        authenticationService.mockResolvedValue({
+        authenticationToken.mockReturnValue({
             isValid: false,
             message: { error: 'Token invalid.' }
         })
@@ -47,13 +46,13 @@ describe('Test authenticationMiddleware', ()=>{
     })
 
     test('Should inject id in request', async()=>{
-        authenticationService.mockResolvedValue({
+        authenticationToken.mockReturnValue({
             isValid: true,
-            decoded: { id: '123e4567-e89b-42d3-a456-426614174000'}
+            decoded: { id: 'fake-id'}
         })
         const request = {
             headers: { authorization:
-                'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjMiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTk5OTk5OTl9.mockSignature'    
+                'Bearer fake-token-jwt'    
 
             }
         }
@@ -63,7 +62,7 @@ describe('Test authenticationMiddleware', ()=>{
         //verify if next are called
         expect(next).toHaveBeenCalled();
         expect(next).toHaveBeenCalledWith();
-        expect(request.id).toEqual('123e4567-e89b-42d3-a456-426614174000')
+        expect(request.id).toEqual('fake-id')
             
     })
 })
