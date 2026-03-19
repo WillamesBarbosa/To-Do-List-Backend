@@ -24,6 +24,8 @@ Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backen
 - Tratamento centralizado de erros
 - Testes unitários e de integração
 - Banco relacional com migrations versionadas
+- Refresh Token com rotação automática
+- Armazenamento de sessão com Redis
 
 ---
 
@@ -50,6 +52,9 @@ Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backen
 - **JWT (JSON Web Token)**
 - **Jest** (testes unitários e de integração)
 - **Supertest**
+-- **Pino**
+- **Redis**
+- **ioredis**
 
 ---
 
@@ -95,15 +100,30 @@ A API utiliza **JWT** para autenticação.
 
 Authorization: Bearer <token>
 
-
 Rotas protegidas exigem token válido.
+
+---
+
+## 🔄 Refresh Token
+
+A API utiliza rotação de refresh token para manter sessões seguras.
+
+### Fluxo
+- No login são gerados dois tokens: access token (curta duração) e refresh token (7 dias)
+- Quando o access token expira, o cliente envia o refresh token para `POST /refresh`
+- A API invalida o refresh token atual e retorna um novo access token e um novo refresh token
+- Refresh tokens são armazenados no Redis com expiração de 7 dias
+
+### Header esperado na rota /refresh:
+x_token_refresh: Refresh <refresh_token>
 
 ---
 
 ## 🚀 Rotas Principais
 
 ### Auth
-- `POST /login`
+- `POST /login` – autentica o usuário e retorna access token e refresh token
+- `POST /refresh` – valida o refresh token e retorna novos access token e refresh token
 
 ### Tasks
 - `POST /task` – cria uma task
@@ -233,6 +253,7 @@ A API retorna 400 quando:
 - Repository responsável apenas pela consulta
 - Service responsável por regras de negócio e validação
 - Essa separação mantém baixo acoplamento e facilita testes isolados.
+
 ## 🧪 Testes
 
 O projeto possui testes **unitários e de integração**, cobrindo:
@@ -288,21 +309,16 @@ O projeto utiliza **Pino** para logging estruturado, com integração automátic
 O header `Authorization` é automaticamente removido dos logs antes de serem registrados.
 
 ## 🗄️ Banco de Dados
+
 ### Relacionamento
-```bash
-users
+`users` possui relação 1:N com `tasks`. Cada task pertence a um único usuário via `user_id` como chave estrangeira com `CASCADE` em deleção.
 
-tasks
-
-user_id → FK para users.id
-```
 ### Migrations
 ```bash
 npx knex migrate:latest
 ```
 
-### Rollback:
-
+### Rollback
 ```bash
 npx knex migrate:rollback
 ```
@@ -322,6 +338,10 @@ DB_USER=
 DB_PASSWORD=
 DB_NAME=
 
+##redis config
+REDIS_HOST=
+REDIS_PORT=
+
 #passwords informations to incript
 PASS_SALTS=
 PASS_FIRSTTEXT=
@@ -331,6 +351,10 @@ PASS_SECONDTEXT=
 #JWT CONFIGS
 TOKEN_SECRET=
 TOKEN_EXPIRATION=
+
+#token refresh 
+TOKEN_REFRESH_SECRET=
+TOKEN_REFRESH_EXPIRATION=
 ```
 
 ## ▶️ Executando o Projeto
@@ -342,6 +366,11 @@ npm install
 Rodar migrations
 ```bash
 npx knex migrate:latest
+```
+
+Subir os serviços necessários
+```bash
+docker-compose up -d
 ```
 
 Iniciar o servidor
@@ -357,7 +386,7 @@ http://localhost:3000
 ```
 
 ## 📈 Roadmap
-- Refresh token
+- Logout
 - Soft delete
 - Rate limiting
 
