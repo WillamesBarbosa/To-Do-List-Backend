@@ -78,16 +78,16 @@ describe('loginController login tests', ()=>{
   })
 })
 
+
 describe('LoginController refresh tests', ()=>{
   test('Should return status 200 and token access jwt and token refresh', async()=>{
     const server =  app;
     
     const user = await createUserTokenToTest(app, userToJWT)    
     const refresh = await request(server).post('/refresh').set('x_token_refresh', `Refresh ${user.refreshToken}`);
-    console.log('token 1',user)
-    console.log('token 2', refresh.body)
-    expect(refresh.status).toEqual(200)
-    expect(refresh.body.refreshToken).not.toEqual(user.refreshToken)
+
+    expect(refresh.status).toEqual(200);
+    expect(refresh.body.refreshToken).not.toEqual(user.refreshToken);
   })
 
   test('Should return 401 unauthorized if x_token_refresh are invalid', async()=>{
@@ -106,9 +106,39 @@ describe('LoginController refresh tests', ()=>{
 
     const refresh = await request(server)    
     .post('/refresh')
-    .set('x_token_refresh', '')
+    .set('x_token_refresh', '');
     
 
+    expect(refresh.status).toEqual(401);
+  })
+})
+
+
+describe('Test logout', ()=>{
+  test('Should return 200 same token invalid', async()=>{
+    const server = app;
+
+    const logout = await request(server)    
+    .post('/logout')
+    .set('x_token_refresh', 'abc');
+    
+    expect(logout.status).toEqual(200);
+  })
+
+    test('It should return 200 on logout and 401 on refresh.', async()=>{
+    const server =  app;
+    
+    const user = await createUserTokenToTest(app, userToJWT);
+
+    const logout = await request(server)    
+    .post('/logout')
+    .set('x_token_refresh', `Refresh ${user.refreshToken}`);
+
+    const refresh = await request(server)    
+    .post('/refresh')
+    .set('x_token_refresh', `Refresh ${user.refreshToken}`);
+    
+    expect(logout.status).toEqual(200);
     expect(refresh.status).toEqual(401);
   })
 })

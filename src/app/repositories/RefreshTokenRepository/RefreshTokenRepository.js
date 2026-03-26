@@ -10,7 +10,7 @@ const RefreshTokenRepository = {
         return await redis.get(userId);
     },
 
-    async deleteUser(userId) {
+    async revokeToken(userId) {
         await redis.del(userId);
     }
 };

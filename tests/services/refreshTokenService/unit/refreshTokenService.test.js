@@ -1,12 +1,12 @@
 jest.mock('../../../../src/app/repositories/RefreshTokenRepository/RefreshTokenRepository', () => ({
     findByUserId: jest.fn(),
-    deleteUser: jest.fn(),
+    revokeToken: jest.fn(),
     save: jest.fn()
 }));
 jest.mock('../../../../src/app/utils/helpers/authenticationToken/authenticationToken', ()=> jest.fn());
 jest.mock('../../../../src/app/utils/helpers/generateToken/generateToken', ()=> jest.fn());
 
-const { findByUserId, save, deleteUser } = require("../../../../src/app/repositories/RefreshTokenRepository/RefreshTokenRepository");
+const { findByUserId, save, revokeToken } = require("../../../../src/app/repositories/RefreshTokenRepository/RefreshTokenRepository");
 const refreshTokenService = require("../../../../src/app/services/refreshTokenService.js/refreshTokenService")
 const authenticationToken = require("../../../../src/app/utils/helpers/authenticationToken/authenticationToken");
 const generateToken = require("../../../../src/app/utils/helpers/generateToken/generateToken");
@@ -54,7 +54,7 @@ describe('Test refreshTokenService', ()=>{
             }
         })
         findByUserId.mockResolvedValue(true);
-        deleteUser.mockResolvedValue();
+        revokeToken.mockResolvedValue();
         save.mockResolvedValue();
         generateToken        
         .mockReturnValueOnce('fake-refresh-token')

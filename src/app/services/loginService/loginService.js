@@ -38,7 +38,7 @@ async function loginService(request){
         const token = generateToken(user.id, process.env.TOKEN_SECRET, process.env.TOKEN_EXPIRATION);
 
         // Caso exista algum tokenRefresh, ele será deletado. Caso não exista, essa função é ignorada e o fluxo continua
-        await RefreshTokenRepository.deleteUser(user.id);
+        await RefreshTokenRepository.revokeToken(user.id);
         
         //AQUI É VALIDADO E GERADO O REFRESH TOKEN
         const refreshToken = generateToken(user.id, process.env.TOKEN_REFRESH_SECRET, process.env.TOKEN_REFRESH_EXPIRATION);

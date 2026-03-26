@@ -5,7 +5,7 @@ jest.mock(
   })
 );
 jest.mock('../../../../src/app/repositories/RefreshTokenRepository/RefreshTokenRepository', () => ({
-    deleteUser: jest.fn(),
+    revokeToken: jest.fn(),
     save: jest.fn()
 }));
 
@@ -92,7 +92,7 @@ describe('Test loginService', ()=>{
         isValidEmail.mockReturnValue({isValid: true});
         findByEmail.mockResolvedValue(user);
         validatePassword.mockResolvedValue(true);
-        RefreshTokenRepository.deleteUser.mockResolvedValue();
+        RefreshTokenRepository.revokeToken.mockResolvedValue();
         RefreshTokenRepository.save.mockResolvedValue();
         generateToken        
         .mockReturnValueOnce('fake-access-token')

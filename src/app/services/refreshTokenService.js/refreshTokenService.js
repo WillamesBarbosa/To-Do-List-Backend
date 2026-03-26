@@ -16,7 +16,7 @@ async function refreshTokenService(request){
     const user = await RefreshTokenRepository.findByUserId(tokenIsValid.decoded.id);
     if(!user) throw new ErrorsHTTP(responsesHTTP.UNAUTHORIZED.message, responsesHTTP.UNAUTHORIZED.status);
 
-    await RefreshTokenRepository.deleteUser(tokenIsValid.decoded.id);
+    await RefreshTokenRepository.revokeToken(tokenIsValid.decoded.id);
     
     const tokenUpdated = generateToken(tokenIsValid.decoded.id, process.env.TOKEN_REFRESH_SECRET, process.env.TOKEN_REFRESH_EXPIRATION);
     await RefreshTokenRepository.save(tokenIsValid.decoded.id, tokenUpdated)
