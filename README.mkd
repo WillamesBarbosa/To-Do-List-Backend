@@ -52,7 +52,7 @@ Este projeto foi desenvolvido com foco em **boas práticas de arquitetura backen
 - **JWT (JSON Web Token)**
 - **Jest** (testes unitários e de integração)
 - **Supertest**
--- **Pino**
+- **Pino**
 - **Redis**
 - **ioredis**
 
@@ -113,6 +113,7 @@ A API utiliza rotação de refresh token para manter sessões seguras.
 - Quando o access token expira, o cliente envia o refresh token para `POST /refresh`
 - A API invalida o refresh token atual e retorna um novo access token e um novo refresh token
 - Refresh tokens são armazenados no Redis com expiração de 7 dias
+- No logout o refresh token é revogado do Redis imediatamente
 
 ### Header esperado na rota /refresh:
 x_token_refresh: Refresh <refresh_token>
@@ -124,6 +125,7 @@ x_token_refresh: Refresh <refresh_token>
 ### Auth
 - `POST /login` – autentica o usuário e retorna access token e refresh token
 - `POST /refresh` – valida o refresh token e retorna novos access token e refresh token
+- `POST /logout` – invalida o refresh token da sessão atual
 
 ### Tasks
 - `POST /task` – cria uma task
@@ -386,7 +388,6 @@ http://localhost:3000
 ```
 
 ## 📈 Roadmap
-- Logout
 - Soft delete
 - Rate limiting
 
