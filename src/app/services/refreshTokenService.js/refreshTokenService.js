@@ -8,13 +8,19 @@ require('dotenv').config();
 
 async function refreshTokenService(request){
     const tokenRefresh = request.headers.x_token_refresh;
-    logger.info('funcionando até aqui')
     
     const tokenIsValid = authenticationToken(tokenRefresh, process.env.TOKEN_REFRESH_SECRET, 'Refresh');
     if(!tokenIsValid.isValid) throw new ErrorsHTTP(responsesHTTP.UNAUTHORIZED.message, responsesHTTP.UNAUTHORIZED.status);
     
     const user = await RefreshTokenRepository.findByUserId(tokenIsValid.decoded.id);
-    if(!user) throw new ErrorsHTTP(responsesHTTP.UNAUTHORIZED.message, responsesHTTP.UNAUTHORIZED.status);
+    if(!user){
+        logger.warn({ userId: tokenIsValid.decoded.id },
+            'Refresh token not found in Redis. Possible use after logout or stolen token.'
+        )
+
+        throw new ErrorsHTTP(responsesHTTP.UNAUTHORIZED.message, responsesHTTP.UNAUTHORIZED.status);
+    } 
+        
 
     await RefreshTokenRepository.revokeToken(tokenIsValid.decoded.id);
     
@@ -22,6 +28,9 @@ async function refreshTokenService(request){
     await RefreshTokenRepository.save(tokenIsValid.decoded.id, tokenUpdated)
     
     const tokenAcess = generateToken(tokenIsValid.decoded.id, process.env.TOKEN_SECRET, process.env.TOKEN_EXPIRATION);
+
+    logger.info({userId: tokenIsValid.decoded.id },'Token rotation successfully completed.');
+
     return { token: tokenAcess, refreshToken: tokenUpdated };
 }
 

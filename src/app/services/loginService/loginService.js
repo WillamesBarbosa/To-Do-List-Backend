@@ -22,7 +22,7 @@ async function loginService(request){
         const user = await findByEmail(email);
         
         if(!user){
-                logger.warn({ email }, 'Tentativa de login com email não cadastrado');
+                logger.warn({ email }, 'Attempt to log in with an unregistered email address.');
                 
                 throw new ErrorsHTTP({error: 'Email not found.'}, responsesHTTP.BAD_REQUEST.status);
         } 
@@ -30,7 +30,7 @@ async function loginService(request){
         
         const isValidPassword = await validatePassword(user, password);
         if(!isValidPassword){
-                logger.warn({ email }, 'Tentativa de login com senha incorreta');
+                logger.warn({ email }, 'Incorrect password login attempt');
                 
                 throw new ErrorsHTTP({error: 'Password incorrect.'}, responsesHTTP.BAD_REQUEST.status);
         }
@@ -45,7 +45,7 @@ async function loginService(request){
 
         await RefreshTokenRepository.save(user.id, refreshToken);
         
-        logger.info({ email, userId: user.id }, 'Login bem-sucedido');
+        logger.info({ email, userId: user.id }, 'Successful login');
 
         return {isValid: true, token, refreshToken};
 
