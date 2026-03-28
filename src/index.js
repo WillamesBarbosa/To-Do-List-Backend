@@ -15,8 +15,9 @@ const PORT = ambient === 'test' ? 0 : process.env.PORT || 3000;
 
 const corsOptions = {
   credentials: true,
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: process.env.CORS_ORIGIN,
 };
+
 app.use(cors(corsOptions));
 app.use(routes);
 
