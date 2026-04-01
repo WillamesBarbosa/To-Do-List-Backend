@@ -286,6 +286,10 @@ Os testes utilizam SQLite em memória, garantindo isolamento total do banco de p
 ## 📋 Logs
 
 O projeto utiliza **Pino** para logging estruturado, com integração automática ao Express via **pino-http**.
+| Ambiente | Saída | Formato |
+|---|---|---|
+| development | Terminal (pino-pretty) | Colorido e legível |
+| production | stdout (Railway) | JSON estruturado |
 
 ### Comportamento por ambiente
 
@@ -358,8 +362,15 @@ TOKEN_EXPIRATION=
 TOKEN_REFRESH_SECRET=
 TOKEN_REFRESH_EXPIRATION=
 ```
+## 🌐 API em produção
+
+```
+https://to-do-list-backend-production-edab.up.railway.app
+
+```
 
 ## ▶️ Executando o Projeto
+
 Instalar dependências
 ```bash
 npm install
