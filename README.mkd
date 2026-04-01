@@ -286,17 +286,13 @@ Os testes utilizam SQLite em memória, garantindo isolamento total do banco de p
 ## 📋 Logs
 
 O projeto utiliza **Pino** para logging estruturado, com integração automática ao Express via **pino-http**.
-| Ambiente | Saída | Formato |
-|---|---|---|
-| development | Terminal (pino-pretty) | Colorido e legível |
-| production | stdout (Railway) | JSON estruturado |
 
 ### Comportamento por ambiente
 
 | Ambiente | Saída | Formato |
 |---|---|---|
-| development | Terminal | Pretty (legível) |
-| production | `logs/app.log` | JSON estruturado |
+| development | Terminal (pino-pretty) | Colorido e legível |
+| production | stdout (Railway) | JSON estruturado |
 
 ### O que é logado
 
